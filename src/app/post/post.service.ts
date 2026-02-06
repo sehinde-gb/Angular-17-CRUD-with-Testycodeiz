@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import {  Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, finalize } from 'rxjs/operators';
 
 import { Post } from './post';
 
@@ -24,7 +24,7 @@ export class PostService {
     })
   }
 
-  isLoading = signal<boolean>(false);
+  isLocalLoading = signal<boolean>(false);
 
   constructor(private httpClient: HttpClient) { }
 
@@ -33,6 +33,7 @@ export class PostService {
     return this.httpClient.get(this.apiURL + '/posts/')
 
     .pipe(
+      finalize(() => this.isLocalLoading.set(false)),
       catchError(this.errorHandler)
     )
   }

@@ -11,22 +11,25 @@
       </tr>
     </thead>
     <tbody>
-      @for (post of postService.getAll() | async; track post.id) {
-        <tr>
-          <td>{{post.id}}</td>
-          <td>{{post.title}}</td>
-          <td>{{post.body}}</td>
-          <td>
-            <a href="#" [routerLink]="['/post/',post.id,'view']" class="btn btn-info">View</a>
-            <a href="#" [routerLink]="['/post/',post.id,'edit']" class="btn btn-primary">Edit</a>
-            <button class="btn btn-danger" type="button" (click)="deletePost(post.id)">Delete</button>
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="4"><p>No posts found.</p></td>
-        </tr>
-      }
+      @if(postService.isLocalLoading()) {
+        @for (post of postService.getAll() | async; track post.id) {
+          <tr>
+            <td>{{post.id}}</td>
+            <td>{{post.title}}</td>
+            <td>{{post.body}}</td>
+            <td>
+              <a href="#" [routerLink]="['/post/',post.id,'view']" class="btn btn-info">View</a>
+              <a href="#" [routerLink]="['/post/',post.id,'edit']" class="btn btn-primary">Edit</a>
+              <button class="btn btn-danger" type="button" (click)="deletePost(post.id)">Delete</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4"><p>No posts found.</p></td>
+          </tr>
+        }
+      }  
     </tbody>
   </table>
+
 </div>
