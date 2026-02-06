@@ -38,6 +38,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;    
       }
       toast.showError(message);
+      // The error listed below throws your error back to the local component
       return throwError(() => error);
     })
   );
