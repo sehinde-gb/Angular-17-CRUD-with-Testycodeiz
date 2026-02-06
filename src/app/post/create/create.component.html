@@ -3,49 +3,49 @@
   <a href="#" routerLink="/post/index" class=" btn btn-warning">Back</a>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
-  <div class="form-group">
-    <label for="title">Title:</label>
-    <input type="text" id="title" formControlName="title" class="form-control"
-    [readOnly]="loadingService.isLoading()">
-        @if(f['title'].touched && f['title'].invalid) {
-          
-        } @else {
-          <div class="alert alert-danger"></div>
-        }
+    <div class="form-group">
+      <label for="title">Title:</label>
+      <input type="text" id="title" formControlName="title" class="form-control"
+      [readOnly]="loadingService.isLoading()">
+          @if(f['title'].touched && f['title'].invalid) {
+            
+          } @else {
+            <div class="alert alert-danger"></div>
+          }
 
-        @if(f['title'].errors &&  f['title'].errors['required']){
-          
-        } @else {
-          <div>Title is required</div>
-        }
-   
-  <div class="form-group">
-    <label for="body">Body:</label>
-    <input type="text" id="body" formControlName="body" class="form-control"
-    [readOnly]="loadingService.isLoading()">
-   
-    @if(f['body'].touched && f['body'].invalid) {
-      
-    } @else {
-      <div class="alert alert-danger"></div>
-    }
-
-    @if(f['body'].errors &&  f['body'].errors['required']){
-      
-    } @else {
-      <div>Post is required</div>
-    }
+          @if(f['title'].errors &&  f['title'].errors['required']){
+            
+          } @else {
+            <div>Title is required</div>
+          }
+    </div>
+    <div class="form-group">
+      <label for="body">Body:</label>
+      <input type="text" id="body" formControlName="body" class="form-control"
+      [readOnly]="loadingService.isLoading()">
     
-  </div>
-  <button class="btn btn-primary" type="submit" [disabled]="!form.valid
-  || loadingService.isLoading()">
+      @if(f['body'].touched && f['body'].invalid) {
+        
+      } @else {
+        <div class="alert alert-danger"></div>
+      }
 
-  @if(loadingService.isLoading()) {
-    <span class="spinner-border"></span>
-  } @else {
-    <span>Create Post</span>
-  }
-  </button>
-  
+      @if(f['body'].errors &&  f['body'].errors['required']){
+        
+      } @else {
+        <div>Post is required</div>
+      }
+      
+    </div>
+    <button class="btn btn-primary" type="submit" [disabled]="!form.valid
+    || loadingService.isLoading()">
+
+      @if(loadingService.isLoading()) {
+        <span class="spinner-border"></span>
+      } @else {
+        <span>Create Post</span>
+      }
+    </button>
+
   </form>
 </div>
