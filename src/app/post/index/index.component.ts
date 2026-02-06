@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Post } from '../post';
 import { PostService } from '../post.service';
+import { GlobalLoadingService } from '../../global-loading.service';
 
 @Component({
   selector: 'app-index',
@@ -16,6 +17,8 @@ export class IndexComponent {
   posts:Post[]=[];
 
   constructor(public postService:PostService){}
+
+  loadingService = inject(GlobalLoadingService)
 
   ngOnInit():void{
     this.postService.getAll().subscribe((data:Post[])=>{
