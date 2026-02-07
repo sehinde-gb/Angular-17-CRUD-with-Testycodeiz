@@ -65,6 +65,8 @@ export class EditComponent  {
     }
     submit() {
       if (this.form.invalid) return;
+      // if the hidden field has a value, it's a bot!
+      if (this.form.get('honeypot')?.value) return;
       
       // 4. Update data
       this.postService.update(this.id, this.form.value).subscribe({
