@@ -43,8 +43,9 @@ export class CreateComponent {
     
     if (this.form.invalid) return;
     // if the hidden field has a value, it's a bot!
-    if (this.form.get('honeypot')?.value) return;
+    // if (this.form.get('honeypot')?.value) return;
 
+    console.log('Submit button clicked!'); // Does this show up in the Playwright Console tab?
     this.postService.create(this.form.value).subscribe({
       next: (res) => {
         this.toast.showSuccess('Post created successfully')

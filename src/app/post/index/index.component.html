@@ -17,7 +17,9 @@
     <tbody>
       @if(postService.isLocalLoading()) {
         <tr>
-          <td colspan="4" class="text-center">Loading posts...</td>
+          <div class="error-state" data-test="error-state-container">
+            <td colspan="4" class="text-center">Loading posts...</td>
+          </div>
         </tr>
       }  @else {
         @for (post of posts; track post.id) {
