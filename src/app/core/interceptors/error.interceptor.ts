@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { ToastService } from './services/toast.service';
+import { ToastService } from '../../services/toast.service';
 import { inject } from '@angular/core';
 import { catchError, retry, throwError, timer } from 'rxjs';
 
@@ -32,11 +32,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         case 401:
           message = 'Session expired. Please login again.';
           // Optional: inject Router and navigate to /login
-          route.navigate(['/posts/index']); // Force the move
+          route.navigate(['/post/index']); // Force the move
           break;
         case 403:
-          message = 'Server side error. Our team has been notified';
+          message = 'You do not have permission to access this page';
           break;
+          // --- ADDED 404 CASE ---
+        case 404:
+          message = error.error?.message || 'The requested resource was not found';
+          break;
+        // ----------------------
          case 500:
           message = 'Cannot connect to the server';
           break;    

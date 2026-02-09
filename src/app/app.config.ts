@@ -4,8 +4,9 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { loadingInterceptor } from './features/interceptors/loading-interceptor';
-import { errorInterceptor } from './error.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes), provideHttpClient(withInterceptors([loadingInterceptor, errorInterceptor]))] // Registering the interceptor here
+  providers: [provideRouter(routes), provideAnimations(), provideHttpClient(withInterceptors([loadingInterceptor, errorInterceptor]))] // Registering the interceptor here
 };

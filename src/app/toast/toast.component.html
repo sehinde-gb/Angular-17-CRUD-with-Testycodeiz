@@ -1,2 +1,21 @@
 
-<p>toast works!</p>
+@if (toastService.currentToast(); as toast) {
+  <div 
+    class="toast-container" 
+    [class]="toast.type" 
+    data-test="toast-notification"
+    role="alert"
+    @toastAnimation
+  >
+    <div class="toast-content">
+      <span class="message">{{ toast.message }}</span>
+      <button 
+        class="close-btn" 
+        (click)="toastService.currentToast.set(null)"
+        aria-label="Close notification"
+      >
+        &times;
+      </button>
+    </div>
+  </div>
+}

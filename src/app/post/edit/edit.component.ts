@@ -1,10 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { Post } from '../post';
+import { Post } from '../models/post';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PostService } from '../post.service';
+import { PostService } from '../../services/post.service';
+
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { GlobalLoadingService } from '../../global-loading.service';
+import { GlobalLoadingService } from '../../services/global-loading.service';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
@@ -66,7 +67,7 @@ export class EditComponent  {
     submit() {
       if (this.form.invalid) return;
       // if the hidden field has a value, it's a bot!
-      if (this.form.get('honeypot')?.value) return;
+      //if (this.form.get('honeypot')?.value) return;
       
       // 4. Update data
       this.postService.update(this.id, this.form.value).subscribe({

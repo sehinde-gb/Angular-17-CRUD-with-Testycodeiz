@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { Post } from '../post';
-import { PostService } from '../post.service';
+import { Post } from '../models/post';
+import { PostService } from '../../services/post.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GlobalLoadingService } from '../../global-loading.service';
+import { GlobalLoadingService } from '../../services/global-loading.service';
 import { RouterModule } from '@angular/router';
 
 @Component({

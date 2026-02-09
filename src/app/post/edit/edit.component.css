@@ -1,0 +1,5 @@
+.toast-container {
+  z-index: 9999; /* Ensure this is higher than the .main container */
+  position: fixed;
+  /* ... other styles */
+}

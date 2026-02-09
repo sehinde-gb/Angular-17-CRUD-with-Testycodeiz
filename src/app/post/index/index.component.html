@@ -17,12 +17,18 @@
     <tbody>
       @if(postService.isLocalLoading()) {
         <tr>
-          <div class="error-state" data-test="error-state-container">
+        
             <td colspan="4" class="text-center">Loading posts...</td>
-          </div>
+          
         </tr>
+      } @else if (hasError()) {
+        <div class="error-state" data-test="error-state-container">
+          <p>We couldn't load the posts....</p>
+          <button (click)="this.postService.getAll()">Try Again</button>
+        </div>
+       
       }  @else {
-        @for (post of posts; track post.id) {
+        @for (post of posts(); track post.id) {
           <tr>
             <td>{{post.id}}</td>
             <td>{{post.title}}</td>

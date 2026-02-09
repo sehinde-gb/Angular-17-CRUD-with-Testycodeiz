@@ -1,1 +1,20 @@
 /* You can add global styles to this file, and also import other style files */
+/* Ensure the toast container sits on top of all other content */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000; /* Higher than your .global-loader-overlay (9999) */
+  pointer-events: auto; /* Ensure it accepts clicks */
+}
+
+/* Optional: styling to make sure it looks like a floating alert */
+.toast-content {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

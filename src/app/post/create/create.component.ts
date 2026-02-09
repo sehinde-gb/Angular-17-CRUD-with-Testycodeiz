@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PostService } from '../post.service';
+import { PostService } from '../../services/post.service';
 import { Router } from '@angular/router';
 import { GlobalLoadingService } from '../../services/global-loading.service';
 import { HttpErrorResponse } from '@angular/common/http';
