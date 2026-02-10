@@ -20,7 +20,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           return timer(1000); // Wait 1 second before retrying
         }
         // Don't retry for 401/403/404
-        throw error;
+        return throwError(() => error)
       }
     }),
 
@@ -29,10 +29,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let message = 'An unexpected error has occurred';
       
       switch(error.status) {
+        case 0:
+          message = 'Cannot connect to the server. Please check your connection.';
+          break;
         case 401:
           message = 'Session expired. Please login again.';
           // Optional: inject Router and navigate to /login
-          route.navigate(['/post/index']); // Force the move
+          //route.navigate(['/post/index']); // Force the move
           break;
         case 403:
           message = 'You do not have permission to access this page';
