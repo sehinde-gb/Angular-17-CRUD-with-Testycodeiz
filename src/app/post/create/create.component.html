@@ -6,39 +6,34 @@
   Back
 </button>
   <form [formGroup]="form" (ngSubmit)="submit()">
+    @if(form.errors?.['serverError']) {
+      <div class="alert alert-danger">
+         Could not save post. Please try again.
+      </div>
+     
+    }
     <div class="form-group">
       <label for="title">Title:</label>
       <input type="text" id="title" formControlName="title" class="form-control"
-      [readOnly]="loadingService.isLoading()">
-          @if(f['title'].touched && f['title'].invalid) {
-            <!-- <div class="alert alert-danger"></div> -->
+      [readOnly]="loadingService.isLoading()" required>
+          @if(f['title'].touched && f['title'].errors?.['required']) {
+            <div class="text-danger">Title is required</div>
           } @else {
             
           }
 
-          @if(f['title'].errors &&  f['title'].errors['required']){
-             <!-- <div>Title is required</div> -->
-          } @else {
-           
-          }
+         
     </div>
     <div class="form-group">
       <label for="body">Body:</label>
       <input type="text" id="body" formControlName="body" class="form-control"
       [readOnly]="loadingService.isLoading()">
     
-      @if(f['body'].touched && f['body'].invalid) {
-        <div class="alert alert-danger"></div>
+      @if(f['body'].touched && f['body'].errors?.['required']) {
+        <div class="text-danger">Post body is required</div>
       } @else {
         
-      }
-
-      @if(f['body'].errors &&  f['body'].errors['required']){
-         <div>Post is required</div>
-      } @else {
-       
-      }
-      
+      } 
     </div>
     <button class="btn btn-primary" type="submit" [disabled]="!form.valid
     || loadingService.isLoading()">

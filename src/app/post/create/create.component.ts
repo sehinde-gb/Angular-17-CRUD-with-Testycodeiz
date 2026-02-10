@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PostService } from '../../services/post.service';
 import { Router } from '@angular/router';
 import { GlobalLoadingService } from '../../services/global-loading.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '../../services/toast.service';
+import { finalize } from 'rxjs';
 
 
 
@@ -24,11 +25,17 @@ export class CreateComponent {
   // This line "brings in" the toast functionality
   private toast = inject(ToastService);
 
+
+  // Local component state (Week 2)
+  isSubmitting = signal(false);
+  serverErrorMessage = signal<string | null>(null);
+
   ngOnInit():void{
     this.form = new FormGroup({
       title: new FormControl('', [Validators.required]),
-      body: new FormControl('',Validators.required)
-    })
+      body: new FormControl('',Validators.required),
+      // honeypot: new FormControl('') // Uncomment if you are using it in a template
+    });
   }
 
   get f(){
@@ -36,20 +43,27 @@ export class CreateComponent {
   }
 
   submit(){
-    console.log(this.form.value);
+    this.serverErrorMessage.set(null);  
+    
+    if (this.form.invalid){
+      this.form.markAllAsTouched();
+      return;
+    } 
+   
 
-    
-    
-    if (this.form.invalid) return;
-    // if the hidden field has a value, it's a bot!
+    // Honeypot (only if it exists in your form / template)
     // if (this.form.get('honeypot')?.value) return;
 
-    console.log('Submit button clicked!'); // Does this show up in the Playwright Console tab?
-    this.postService.create(this.form.value).subscribe({
-      next: (res) => {
-        this.toast.showSuccess('Post created successfully')
-        this.route.navigateByUrl('post/index');
-      },
+    if (this.isSubmitting()) return; // prevents double submits
+       this.isSubmitting.set(true);
+    
+    this.postService.create(this.form.value).pipe(
+      finalize(() => this.isSubmitting.set(false))
+      ).subscribe({
+        next: (res) => {
+          this.toast.showSuccess('Post created successfully')
+          this.route.navigateByUrl('post/index');
+        },
       error: (err: HttpErrorResponse) => {
         /* 2. The interceptor has already shown the toast for 401, 403, 500. 
          You only use this block for component specific logic. */
@@ -58,8 +72,10 @@ export class CreateComponent {
         if (err.status === 400 || err.status === 422) {
           // Special case Validation errors are usually handled locally
           // Rather than in a global interceptor toast.
-          this.form.setErrors({ serverError: true});
-
+            const msg = err.error?.message ||
+              'Please check the form. Some fields are invalid.';
+            this.serverErrorMessage.set(msg);
+            this.form.setErrors({ serverError: true});  
           /* Note Loading service.isLoading() becomes false automatically
           because the finalize() block in your loading interceptor
           runs after this catchError block. */
