@@ -14,13 +14,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     retry({
       count: 2,
       delay: (error, retryCount) => {
-        // Only retry on 500 errors or network failures
-        if (error.status >= 500 || error.status === 0) {
+        // Only retry on 500 errors or network failures and apply to GET request only
+        const isRetryableStatus = error.status >= 500 || error.status === 0;
+        const isGet = req.method === 'GET';
+        
+        if (isGet && isRetryableStatus) {
           console.warn(`Retry attempt ${retryCount}...`);
-          return timer(1000); // Wait 1 second before retrying
+          return timer(1000 * retryCount);
         }
-        // Don't retry for 401/403/404
-        return throwError(() => error)
+        // Don't retry for 401/403/404 and move on to 2. Error Handling Logic
+        return throwError(() => error);
+        
       }
     }),
 
@@ -32,11 +36,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         case 0:
           message = 'Cannot connect to the server. Please check your connection.';
           break;
+        case 400:
+        // Validation errors are handled locally by the component    
         case 401:
           message = 'Session expired. Please login again.';
           // Optional: inject Router and navigate to /login
           //route.navigate(['/post/index']); // Force the move
           break;
+        case 422:
+          // Validation errors are handled locally by the component
+          return throwError(() => error);  
         case 403:
           message = 'You do not have permission to access this page';
           break;
