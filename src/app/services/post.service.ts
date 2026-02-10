@@ -39,47 +39,28 @@ export class PostService {
     )
   }
 
-  create(post:Post): Observable<any> {
 
-    return this.httpClient.post(this.apiURL + '/posts/', JSON.stringify(post), this.httpOptions)
-
-    .pipe(
-      catchError(this.errorHandler)
-    )
+  create(post: Post): Observable<Post>{
+    return this.httpClient.post<Post>(`$this{this.apiURL}/posts/`, post);
   }
 
-  find(id:number): Observable<any> {
 
-    return this.httpClient.get(this.apiURL + '/posts/' + id)
-    //return this.httpClient.get(this.apiURL + '/posts/' + 30303)
-    .pipe(
-      catchError(this.errorHandler)
-    )
+
+  find(id: number): Observable<Post> {
+    return this.httpClient.get<Post>(`${this.apiURL}/posts/${id}`);
   }
 
-  update(id:number, post:Post): Observable<any> {
+  update(id:number, post:Post): Observable<Post> {
 
-    return this.httpClient.put(this.apiURL + '/posts/' + id, JSON.stringify(post), this.httpOptions)
+    return this.httpClient.put<Post>(`${this.apiURL}/posts/${id}`, post)
 
-    .pipe(
-      catchError(this.errorHandler)
-    )
+    
   }
 
-  delete(id:number){
-    return this.httpClient.delete(this.apiURL + '/posts/' + id, this.httpOptions)
+  delete(id: number): Observable<void> {
+    return this.httpClient.delete<void>(`${this.apiURL}/posts/${id}`, this.httpOptions);
 
-    .pipe(
-      catchError(this.errorHandler)
-    )
+   
   }
-  errorHandler(error:any) {
-    let errorMessage = '';
-    if(error.error instanceof ErrorEvent) {
-      errorMessage = error.error.message;
-    } else {
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-    }
-    return throwError(errorMessage);
- }
+  
 }

@@ -109,14 +109,4 @@ export class EditComponent  {
 
   
 
-  /* get f(){
-    return this.form.controls;
-  }
-   submit(){
-    console.log(this.form.value)
-    this.postService.update(this.id,this.form.value).subscribe((res:any)=>{
-      alert("Data Updated Successfull ☺");
-      this.router.navigateByUrl('post/index')
-    })
-   } */
-}
+  
