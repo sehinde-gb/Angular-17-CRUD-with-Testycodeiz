@@ -1,6 +1,10 @@
 <div class="container">
   <h1 class="text-center">Angular 17 CRUD Application</h1>
   <a routerLink="/post/create/" class="btn btn-success">Create Post</a>
+  @if(auth.isAuthenticated()){
+    <button class="btn btn-outline-danger" (click)="logout()">Logout</button>
+  }
+  
   <table class="table table-striped">
     <thead>
       <tr>

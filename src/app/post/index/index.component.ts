@@ -5,6 +5,8 @@ import { Post } from '../models/post';
 import { PostService } from '../../services/post.service';
 import { GlobalLoadingService } from '../../services/global-loading.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../features/auth/services/auth.service';
+import { Router } from '@angular/router';
 
 
 interface LoadingState {
@@ -28,6 +30,9 @@ export class IndexComponent {
   loadingService: GlobalLoadingService = inject(GlobalLoadingService);
   hasError: WritableSignal<boolean> = signal(false); // The test looks for this transition
   isLoading: WritableSignal<boolean> = signal(false);
+  public auth = inject(AuthService);
+  private router = inject(Router);
+
 
   ngOnInit(): void {
   
@@ -56,5 +61,10 @@ export class IndexComponent {
       this.posts.update((currentPosts: Post[]) => currentPosts.filter((item: Post) => item.id !== id));
       alert("Post Deleted Successfull !.")
     })
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['./auth/login']);
   }
 }

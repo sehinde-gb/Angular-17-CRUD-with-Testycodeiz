@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../../../services/toast.service';
 import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +17,7 @@ export class LoginComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   form = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -34,7 +36,10 @@ export class LoginComponent {
       next: (res) => {
         this.auth.handleLoginSuccess(res);
         this.toast.showSuccess('Logged in');
-        this.router.navigate(['/post/index']);
+        //this.router.navigate(['/post/index']);
+        const returnUrl = 
+          this.route.snapshot.queryParams['returnUrl'] || ['/post/index'];
+          this.router.navigateByUrl(returnUrl);
       },
       error: () => {
         // Keep it simple for mock auth
