@@ -20,9 +20,11 @@ export class AuthService {
       return throwError(() => ({ status: 400, message: 'Email and password are required'}));
     }
 
-    const role: UserRole = payload.email.toLowerCase().includes('admin') ? 'admin' : 'user';
+    //const role: UserRole = payload.email.toLowerCase().includes('admin') ? 'admin' : 'user';
+    const role = payload.email.toLowerCase().includes('admin') ? 'admin' : 'user';
     const response: LoginResponse = {
-      accessToken: 'mock-jwt-token',
+      //accessToken: 'mock-jwt-token',
+      accessToken: 'mock-token',
       user: {
         email: payload.email,
         role: role

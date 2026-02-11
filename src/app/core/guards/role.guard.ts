@@ -1,20 +1,18 @@
-import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
-import { TokenStorageService } from '../../features/auth/services/token-storage.service';
+import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { UserRole } from '../../features/auth/models/auth.models';
+import { TokenStorageService } from '../../features/auth/services/token-storage.service';
 
-export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+export const roleGuard: CanActivateFn = (route, state) => {
   const storage = inject(TokenStorageService);
   const router = inject(Router);
 
-  const required = (route.data?.['roles'] as UserRole[] | undefined) ?? [];
-  const role = storage.getRole() as UserRole | null;
+  const requiredRoles = route.data?.['roles'] as string[] | undefined;
+  if (!requiredRoles?.length) return true;
 
-  if(required.length === 0) return true;
-  if (role && required.includes(role)) return true;
+  const role = storage.getRole();
+  if (role && requiredRoles.includes(role)) return true;
 
-  router.navigate(['/post/index']);
-
-
-  return false;
+  return router.createUrlTree(['/forbidden'], {
+    queryParams: { from: state.url }
+  });
 };

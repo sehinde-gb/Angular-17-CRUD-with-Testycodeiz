@@ -2,6 +2,9 @@
   <div class="left">
     <a routerLink="/post/index" class="brand">Angular 17 CRUD</a>
     <a routerLink="/post/index" class="nav-link">Posts</a>
+    @if(role === 'admin'){
+      <a routerLink="/admin" class="nav-link">Admin</a>
+    }
   </div>
 
   <div class="right">

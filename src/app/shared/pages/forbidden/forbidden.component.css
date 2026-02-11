@@ -1,0 +1,22 @@
+.forbidden-container {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 24px;
+  text-align: center;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: white;
+}
+
+.forbidden-container h1 {
+  font-size: 64px;
+  margin-bottom: 8px;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  text-decoration: none;
+}

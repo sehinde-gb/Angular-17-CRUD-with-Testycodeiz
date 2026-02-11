@@ -3,8 +3,8 @@ import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../../../services/toast.service';
-import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute  } from '@angular/router';
+
 
 @Component({
   selector: 'app-login',
@@ -37,9 +37,9 @@ export class LoginComponent {
         this.auth.handleLoginSuccess(res);
         this.toast.showSuccess('Logged in');
         //this.router.navigate(['/post/index']);
-        const returnUrl = 
-          this.route.snapshot.queryParams['returnUrl'] || ['/post/index'];
-          this.router.navigateByUrl(returnUrl);
+        const returnUrl: string = this.route.snapshot.queryParams['returnUrl'] || '/post/index';
+        this.router.navigateByUrl(returnUrl);
+          
       },
       error: () => {
         // Keep it simple for mock auth

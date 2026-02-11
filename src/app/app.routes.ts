@@ -5,6 +5,7 @@ import { EditComponent } from './post/edit/edit.component';
 import { ViewComponent } from './post/view/view.component';
 import { guestGuard } from './core/guards/guest.guard';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'post/index', pathMatch: 'full' },
@@ -28,6 +29,21 @@ export const routes: Routes = [
       { path: ':postId/view', component: ViewComponent },
       { path: '', redirectTo: 'index', pathMatch: 'full' }
       ]
+  },
+
+  {
+    path: 'admin',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] },
+    loadComponent: () =>
+      import('./features/admin/pages/admin-dashboard/admin-dashboard.component')
+        .then(m => m.AdminDashboardComponent)
+  },
+  {
+    path: 'forbidden',
+    loadComponent: () =>
+      import('./shared/pages/forbidden/forbidden.component')
+        .then(m => m.ForbiddenComponent)
   },
   // 404
   {
