@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { loadingInterceptor } from './features/interceptors/loading-interceptor';
+import { loadingInterceptor } from './core/interceptors/loading-interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 

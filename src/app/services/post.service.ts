@@ -1,9 +1,6 @@
-import { effect, Injectable, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-
-import {  Observable, throwError } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
-
+import {  Observable } from 'rxjs';
 import { Post } from '../post/models/post';
 
 @Injectable({
@@ -24,38 +21,23 @@ export class PostService {
     })
   }
 
-  isLocalLoading = signal<boolean>(false);
-  postService: any;
-
   constructor(private httpClient: HttpClient) {}
-
-  getAll(): Observable<any> {
-    this.isLocalLoading.set(true);
-    
-    return this.httpClient.get(this.apiURL + '/posts/')
-    .pipe(
-      finalize(() => this.isLocalLoading.set(false))
-      
-    )
+  
+  getAll(): Observable<Post[]> {
+    return this.httpClient.get<Post[]>(`${this.apiURL}/posts/`);
   }
-
 
   create(post: Post): Observable<Post>{
-    return this.httpClient.post<Post>(`$this{this.apiURL}/posts/`, post);
+    return this.httpClient.post<Post>(`${this.apiURL}/posts/`, post);
   }
-
-
 
   find(id: number): Observable<Post> {
     return this.httpClient.get<Post>(`${this.apiURL}/posts/${id}`);
   }
 
-  update(id:number, post:Post): Observable<Post> {
-
-    return this.httpClient.put<Post>(`${this.apiURL}/posts/${id}`, post)
-
-    
-  }
+  update(id: number, post: Post): Observable<Post> {
+  return this.httpClient.put<Post>(`${this.apiURL}/posts/${id}`, post, this.httpOptions);
+}
 
   delete(id: number): Observable<void> {
     return this.httpClient.delete<void>(`${this.apiURL}/posts/${id}`, this.httpOptions);

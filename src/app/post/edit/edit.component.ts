@@ -29,7 +29,9 @@ export class EditComponent  {
 
   ngOnInit():void{
     // 1. Get id from route
-    this.id = Number(this.route.snapshot.params['postId']);
+    //this.id = Number(this.route.snapshot.params['postId']);
+    this.id = Number(this.route.snapshot.paramMap.get('postId'));
+    console.log('Edit id:', this.id);
 
     // This code handles invalid ID's
     if(!this.id) {
@@ -51,7 +53,7 @@ export class EditComponent  {
         this.form.patchValue(data);
         this.form.markAsPristine();
       },
-      error: () {
+      error: () => {
         // interceptor already toasts
         this.form.setErrors({ loadFailed: true});
 

@@ -1,67 +1,60 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { ToastService } from '../../services/toast.service';
 import { inject } from '@angular/core';
+import { ToastService } from '../../services/toast.service';
 import { catchError, retry, throwError, timer } from 'rxjs';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const toast = inject(ToastService); //Inject our new service
-  const route = inject(Router);
-  
-  
+  const toast = inject(ToastService);
+
   return next(req).pipe(
-    // 1. Retry logic
     retry({
       count: 2,
       delay: (error, retryCount) => {
-        // Only retry on 500 errors or network failures and apply to GET request only
+        // Checks to see server errors (errors more than 500) and whether it is a GET request
         const isRetryableStatus = error.status >= 500 || error.status === 0;
         const isGet = req.method === 'GET';
-        
+        // The system retries until the count goes to 2 and it then throws an error
         if (isGet && isRetryableStatus) {
-          console.warn(`Retry attempt ${retryCount}...`);
+          // This uses backoff and this means it will wait for longer ie use retry count to increase
+          // the time in between retry attempts this reduces the load on the server itself.
           return timer(1000 * retryCount);
         }
-        // Don't retry for 401/403/404 and move on to 2. Error Handling Logic
         return throwError(() => error);
-        
       }
     }),
 
-    // 2. Error Handling logic
-    catchError((error: HttpErrorResponse)=>{
+    catchError((error: HttpErrorResponse) => {
+      // Let components handle validation errors locally
+      if (error.status === 400 || error.status === 422) {
+        // this throws those errors to the local component.
+        return throwError(() => error);
+      }
+      // This checks the error message and it then breaks and moves to the local component state
       let message = 'An unexpected error has occurred';
-      
-      switch(error.status) {
+
+      switch (error.status) {
         case 0:
           message = 'Cannot connect to the server. Please check your connection.';
           break;
-        case 400:
-        // Validation errors are handled locally by the component    
         case 401:
           message = 'Session expired. Please login again.';
-          // Optional: inject Router and navigate to /login
-          //route.navigate(['/post/index']); // Force the move
           break;
-        case 422:
-          // Validation errors are handled locally by the component
-          return throwError(() => error);  
         case 403:
           message = 'You do not have permission to access this page';
           break;
-          // --- ADDED 404 CASE ---
         case 404:
           message = error.error?.message || 'The requested resource was not found';
           break;
-        // ----------------------
-         case 500:
+        case 500:
           message = 'Cannot connect to the server';
-          break;    
+          break;
       }
+
+      // Send the error message above to the toast show error function
       toast.showError(message);
-      // The error listed below throws your error back to the local component
+      
+      // This rethrows the error above back to the local component!
       return throwError(() => error);
     })
   );
 };
-

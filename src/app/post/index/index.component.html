@@ -1,6 +1,6 @@
 <div class="container">
   <h1 class="text-center">Angular 17 CRUD Application</h1>
-  <a href="#" routerLink="/post/create/" class="btn btn-success">Create Post</a>
+  <a routerLink="/post/create/" class="btn btn-success">Create Post</a>
   <table class="table table-striped">
     <thead>
       <tr>
@@ -10,23 +10,18 @@
         <th width="250px">Action</th>
       </tr>
     </thead>
-
-
-    
-
     <tbody>
-      @if(postService.isLocalLoading()) {
+      @if(isLoading()) {
         <tr>
-        
             <td colspan="4" class="text-center">Loading posts...</td>
-          
         </tr>
       } @else if (hasError()) {
-        <div class="error-state" data-test="error-state-container">
-          <p>We couldn't load the posts....</p>
-          <button (click)="this.postService.getAll()">Try Again</button>
-        </div>
-       
+        <tr>
+          <td colspan="4" class="text-center" data-test="error-state-container">
+            <p>We couldn't load the posts...</p>
+            <button type="button" class="btn btn-secondary" (click)="loadPosts()">Try Again</button>
+          </td>
+        </tr>       
       }  @else {
         @for (post of posts(); track post.id) {
           <tr>
@@ -34,8 +29,8 @@
             <td>{{post.title}}</td>
             <td>{{post.body}}</td>
             <td>
-              <a href="#" [routerLink]="['/post/',post.id,'view']" class="btn btn-info">View</a>
-              <a href="#" [routerLink]="['/post/',post.id,'edit']" class="btn btn-primary">Edit</a>
+              <a [routerLink]="['/post/',post.id,'view']" class="btn btn-info">View</a>
+              <a [routerLink]="['/post/edit', post.id]" class="btn btn-primary">Edit</a>
               <button class="btn btn-danger" type="button" (click)="deletePost(post.id)">Delete</button>
             </td>
           </tr>
@@ -47,5 +42,4 @@
       }
     </tbody>
   </table>
-
 </div>

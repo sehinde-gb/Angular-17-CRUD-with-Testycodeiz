@@ -4,7 +4,8 @@ import { RouterModule } from '@angular/router';
 import { Post } from '../models/post';
 import { PostService } from '../../services/post.service';
 import { GlobalLoadingService } from '../../services/global-loading.service';
-import { Observable } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+
 
 interface LoadingState {
   isLoading: boolean;
@@ -18,13 +19,12 @@ interface LoadingState {
   templateUrl: './index.component.html',
   styleUrl: './index.component.css'
 })
+
 export class IndexComponent {
 
-
+ 
   posts: WritableSignal<Post[]> = signal<Post[]>([])
   public postService = inject(PostService);
-  //constructor(public postService: PostService){}
-
   loadingService: GlobalLoadingService = inject(GlobalLoadingService);
   hasError: WritableSignal<boolean> = signal(false); // The test looks for this transition
   isLoading: WritableSignal<boolean> = signal(false);
@@ -43,7 +43,7 @@ export class IndexComponent {
         this.posts.set(data);
         this.isLoading.set(false);
       },
-      error: (err: Error): void => {
+      error: (err: HttpErrorResponse): void => {
         this.posts.set([]);
         this.hasError.set(true); // Sets the 'error-state-container'
         this.isLoading.set(false);
