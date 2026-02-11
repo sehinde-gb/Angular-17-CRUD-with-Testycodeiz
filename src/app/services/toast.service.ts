@@ -23,6 +23,7 @@ export class ToastService {
 
   // 3. The base method (Ensure this is INSIDE the last } of the class)
   show(message: string, type: 'success' | 'error' | 'info' = 'info', duration: number = 3000) {
+    const safeMessage = message?.trim() || 'Notification';
     this.currentToast.set({ message, type });
 
     setTimeout(() => {

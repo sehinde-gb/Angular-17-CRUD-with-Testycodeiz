@@ -9,34 +9,31 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'post/index', pathMatch: 'full' },
 
-  { path: 'post', redirectTo: 'post/index', pathMatch: 'full' },
-
-  {
-    path: 'post/index',
-    component: IndexComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'post/create',
-    component: CreateComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'post/:postId/edit',
-    component: EditComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'post/:postId/view',
-    component: ViewComponent,
-    canActivate: [authGuard]
-  },
+  { path: 'auth', redirectTo: 'auth/login', pathMatch: 'full' },
 
   {
     path: 'auth/login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component')
         .then(m => m.LoginComponent)
+  },
+  {
+    path: 'post',
+    canActivate: [authGuard],
+    children: [
+      { path: 'index', component: IndexComponent },
+      { path: 'create', component: CreateComponent },
+      { path: ':postId/edit', component: EditComponent },
+      { path: ':postId/view', component: ViewComponent },
+      { path: '', redirectTo: 'index', pathMatch: 'full' }
+      ]
+  },
+  // 404
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./shared/pages/not-found/not-found.component')
+        .then(m => m.NotFoundComponent)
   }
 ];
 

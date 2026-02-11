@@ -1,8 +1,8 @@
 
 @if (toastService.currentToast(); as toast) {
-  <div 
-    class="toast-container" 
-    [class]="toast.type" 
+  <div
+    class="toast-container"
+    [ngClass]="toast.type"
     data-test="toast-notification"
     role="alert"
     @toastAnimation
