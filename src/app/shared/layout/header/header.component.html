@@ -1,0 +1,15 @@
+<nav class="app-header">
+  <div class="left">
+    <a routerLink="/post/index" class="brand">Angular 17 CRUD</a>
+    <a routerLink="/post/index" class="nav-link">Posts</a>
+  </div>
+
+  <div class="right">
+    @if(auth.isAuthenticated()) {
+      <span class="role-pill">Role: {{ role ?? 'user' }}</span>
+      <button class="btn" type="button" (click)="logout()">Logout</button>
+    } @else {
+      <a class="btn" routerLink="/auth/login">Login</a>
+    }
+  </div>
+</nav>

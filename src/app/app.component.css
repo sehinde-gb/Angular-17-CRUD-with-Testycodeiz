@@ -1,24 +1,31 @@
-/* A thin progress bar at the very top of the page */
+/* Thin progress bar container at the very top */
 .global-loader-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 4px; /* Thin line */
+  height: 4px;
   z-index: 9999;
   background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
 }
 
+/* The moving bar */
 .progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
-  width: 30%; /* Starting width */
+  width: 30%;
   background: #3498db;
   box-shadow: 0 0 10px #3498db;
   animation: loading-animation 2s infinite ease-in-out;
 }
 
 @keyframes loading-animation {
-  0% { width: 0%; left: 0%; }
-  50% { width: 50%; left: 25%; }
-  100% { width: 0%; left: 100%; }
+  0%   { width: 0%;  left: 0%; }
+  50%  { width: 50%; left: 25%; }
+  100% { width: 0%;  left: 100%; }
 }
+
+
