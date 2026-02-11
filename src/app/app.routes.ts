@@ -3,7 +3,7 @@ import { IndexComponent } from './post/index/index.component';
 import { CreateComponent } from './post/create/create.component';
 import { EditComponent } from './post/edit/edit.component';
 import { ViewComponent } from './post/view/view.component';
-
+import { guestGuard } from './core/guards/guest.guard';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -13,6 +13,7 @@ export const routes: Routes = [
 
   {
     path: 'auth/login',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./features/auth/pages/login/login.component')
         .then(m => m.LoginComponent)
