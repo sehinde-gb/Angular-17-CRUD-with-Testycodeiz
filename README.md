@@ -311,3 +311,73 @@ The refactor improves:
 	•	maintainability of components
 	•	clarity of responsibility boundaries
 	•	resilience of HTTP requests
+
+
+	sequenceDiagram
+  autonumber
+  actor User
+  participant Router
+  participant AuthGuard
+  participant LoginComponent
+  participant AuthService
+  participant TokenStorage as TokenStorageService
+  participant PostPage as Post Component (Index/Create/Edit/View)
+  participant PostService
+  participant Http as HttpClient
+  participant AuthInt as AuthInterceptor
+  participant LoadInt as LoadingInterceptor
+  participant ErrInt as ErrorInterceptor
+  participant API as API Server
+
+  User->>Router: Navigate to /post/index
+  Router->>AuthGuard: canActivate?
+  AuthGuard->>TokenStorage: getToken()
+
+  alt No token found
+    TokenStorage-->>AuthGuard: null
+    AuthGuard-->>Router: redirect /auth/login
+    Router-->>User: Show Login page
+
+    User->>LoginComponent: Enter email + password, click Submit
+    LoginComponent->>AuthService: login(credentials)
+    AuthService-->>LoginComponent: LoginResponse (mock or real)
+
+    LoginComponent->>AuthService: handleLoginSuccess(response)
+    AuthService->>TokenStorage: setToken(token)
+    AuthService->>TokenStorage: setRole(role)
+    AuthService-->>LoginComponent: isAuthenticated = true
+    LoginComponent->>Router: navigate to /post/index
+  else Token exists
+    TokenStorage-->>AuthGuard: token
+    AuthGuard-->>Router: allow navigation
+  end
+
+  Router-->>PostPage: Render Post page
+  PostPage->>PostService: getAll()/find()/create()/update()/delete()
+  PostService->>Http: HTTP request
+
+  Http->>AuthInt: Intercept request
+  AuthInt->>TokenStorage: getToken()
+  AuthInt-->>Http: Add Authorization header
+
+  Http->>LoadInt: Intercept request
+  LoadInt-->>Http: loadingService.show()
+
+  Http->>ErrInt: Intercept request
+  ErrInt-->>API: Send request
+
+  alt Success response
+    API-->>ErrInt: 200 OK + data
+    ErrInt-->>LoadInt: pass through
+    LoadInt-->>Http: finalize() -> loadingService.hide()
+    Http-->>PostService: return data
+    PostService-->>PostPage: observable next()
+  else Error response
+    API-->>ErrInt: 4xx/5xx error
+    ErrInt-->>ErrInt: retry GET on 0/5xx (backoff)
+    ErrInt-->>PostPage: toast.showError() (except 400/422)
+    ErrInt-->>LoadInt: rethrow error
+    LoadInt-->>Http: finalize() -> loadingService.hide()
+    Http-->>PostService: error
+    PostService-->>PostPage: observable error()
+  end
