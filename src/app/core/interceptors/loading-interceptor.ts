@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from "@angular/common/http";
 import { inject } from "@angular/core";
-import { GlobalLoadingService } from "../../services/global-loading.service";
+import { GlobalLoadingService } from "../services/global-loading.service";
 import { finalize } from "rxjs";
 
 

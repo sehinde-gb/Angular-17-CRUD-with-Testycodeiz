@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal, WritableSignal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Post } from '../models/post';
+import { Post } from '../../models/post';
 import { PostService } from '../../services/post.service';
-import { GlobalLoadingService } from '../../services/global-loading.service';
+import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AuthService } from '../../features/auth/services/auth.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { Router } from '@angular/router';
 
 

@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { ToastService } from '../../services/toast.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { catchError, retry, throwError, timer } from 'rxjs';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {

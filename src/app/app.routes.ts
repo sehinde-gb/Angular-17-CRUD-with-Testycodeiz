@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { IndexComponent } from './post/index/index.component';
-import { CreateComponent } from './post/create/create.component';
-import { EditComponent } from './post/edit/edit.component';
-import { ViewComponent } from './post/view/view.component';
+import {IndexComponent } from './features/posts/pages/index/index.component'
+import { CreateComponent } from './features/posts/pages/create/create.component';
+import { EditComponent } from './features/posts/pages/edit/edit.component';
+import { ViewComponent } from './features/posts/pages/view/view.component';
 import { guestGuard } from './core/guards/guest.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';

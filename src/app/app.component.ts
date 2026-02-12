@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { GlobalLoadingService } from './services/global-loading.service';
-import { ToastComponent } from './toast/toast.component';
+import { GlobalLoadingService } from './core/services/global-loading.service';
+import { ToastComponent } from './shared/ui/toast/toast.component';
 import { HeaderComponent } from './shared/layout/header/header.component';
 
 @Component({

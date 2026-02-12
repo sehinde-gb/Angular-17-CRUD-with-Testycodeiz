@@ -1,11 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { Post } from '../models/post';
+import { Post } from '../../models/post';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PostService } from '../../services/post.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { GlobalLoadingService } from '../../services/global-loading.service';
-import { ToastService } from '../../services/toast.service';
+import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
+import { ToastService } from '../../../../shared/services/toast.service';
+
 
 @Component({
   selector: 'app-edit',

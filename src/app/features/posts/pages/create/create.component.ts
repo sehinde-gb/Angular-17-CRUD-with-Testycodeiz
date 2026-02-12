@@ -3,9 +3,9 @@ import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PostService } from '../../services/post.service';
 import { Router } from '@angular/router';
-import { GlobalLoadingService } from '../../services/global-loading.service';
+import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ToastService } from '../../services/toast.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 import { finalize } from 'rxjs';
 
 
