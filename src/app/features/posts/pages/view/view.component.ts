@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { PostService } from '../../services/post.service';
 import { ActivatedRoute } from '@angular/router';
@@ -14,8 +13,6 @@ import { RouterModule } from '@angular/router';
 })
 export class ViewComponent {
 
-
-
   post = signal<any>(null);
 
   public loadingService = inject(GlobalLoadingService);
@@ -23,10 +20,8 @@ export class ViewComponent {
   private route = inject(ActivatedRoute);
 
 
-
   ngOnInit():void{
    
-
       const id = this.route.snapshot.params['postId'];
 
       // 2. Fetch the data

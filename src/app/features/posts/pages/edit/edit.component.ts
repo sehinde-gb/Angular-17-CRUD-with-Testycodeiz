@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Post } from '../../models/post';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PostService } from '../../services/post.service';
@@ -6,6 +6,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { UpdatePostDto } from '../../models/post.dto';
 
 
 @Component({
@@ -27,6 +28,7 @@ export class EditComponent  {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
+  isSubmitting = signal(false);
 
   ngOnInit():void{
     // 1. Get id from route
@@ -84,11 +86,18 @@ export class EditComponent  {
           return;
       }
 
-      if (this.loadingService.isLoading()) return;
+      if (this.isSubmitting()) return;
+        this.isSubmitting.set(true);
         
       // if (this.form.get('honeypot')?.value) return;
 
-      this.postService.update(this.id, this.form.value).subscribe({
+       //✅ Explicit DTO mapping
+       const payload: UpdatePostDto = {
+        title: this.form.value.title!,
+        body: this.form.value.body!
+       }; 
+
+      this.postService.update(this.id, payload).subscribe({
         next: () => {
           this.toast.showSuccess('Post updated successfully');
           this.router.navigateByUrl('post/index');

@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {  Observable } from 'rxjs';
 import { Post } from '../models/post'
 import { environment} from '../../../../environments/environment';
+import { ApiPaths} from '../../../core/api/api-paths';
+import {CreatePostDto, UpdatePostDto} from '../models/post.dto';
 
 @Injectable({
   providedIn: 'root'
@@ -11,39 +13,28 @@ export class PostService {
 
   private apiURL = environment.apiUrl;
 
-  /*------------------------------------------
-  --------------------------------------------
-  Http Header Options
-  --------------------------------------------
-  --------------------------------------------*/
-  httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json'
-    })
-  }
+  
 
-  constructor(private httpClient: HttpClient) {}
+  constructor(private http: HttpClient) {}
   
   getAll(): Observable<Post[]> {
-    return this.httpClient.get<Post[]>(`${this.apiURL}/posts/`);
+    return this.http.get<Post[]>(`${this.apiURL}/posts`);
   }
 
-  create(post: Post): Observable<Post>{
-    return this.httpClient.post<Post>(`${this.apiURL}/posts/`, post);
+  create(payload: CreatePostDto): Observable<Post> {
+    return this.http.post<Post>(`${this.apiURL}/posts`, payload);
   }
 
   find(id: number): Observable<Post> {
-    return this.httpClient.get<Post>(`${this.apiURL}/posts/${id}`);
+    return this.http.get<Post>(`${this.apiURL}/posts/${id}`);
   }
 
-  update(id: number, post: Post): Observable<Post> {
-  return this.httpClient.put<Post>(`${this.apiURL}/posts/${id}`, post, this.httpOptions);
-}
+  update(id: number, payload: UpdatePostDto): Observable<Post> {
+    return this.http.put<Post>(`${this.apiURL}/posts/${id}`, payload);
+  }
 
   delete(id: number): Observable<void> {
-    return this.httpClient.delete<void>(`${this.apiURL}/posts/${id}`, this.httpOptions);
-
-   
+    return this.http.delete<void>(`${this.apiURL}/posts/${id}`);
   }
   
 }

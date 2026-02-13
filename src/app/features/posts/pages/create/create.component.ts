@@ -7,7 +7,7 @@ import { GlobalLoadingService } from '../../../../core/services/global-loading.s
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { finalize } from 'rxjs';
-
+import { CreatePostDto } from '../../models/post.dto';
 
 
 @Component({
@@ -17,6 +17,7 @@ import { finalize } from 'rxjs';
   templateUrl: './create.component.html',
   styleUrl: './create.component.css'
 })
+
 export class CreateComponent {
   form!:FormGroup;
   public loadingService = inject(GlobalLoadingService); // Inject here
@@ -56,30 +57,36 @@ export class CreateComponent {
 
     if (this.isSubmitting()) return; // prevents double submits
        this.isSubmitting.set(true);
-    
-    this.postService.create(this.form.value).pipe(
-      finalize(() => this.isSubmitting.set(false))
-      ).subscribe({
-        next: (res) => {
-          this.toast.showSuccess('Post created successfully')
-          this.route.navigateByUrl('post/index');
-        },
-      error: (err: HttpErrorResponse) => {
-        /* 2. The interceptor has already shown the toast for 401, 403, 500. 
-         You only use this block for component specific logic. */
-        
 
-        if (err.status === 400 || err.status === 422) {
-          // Special case Validation errors are usually handled locally
-          // Rather than in a global interceptor toast.
-            const msg = err.error?.message ||
-              'Please check the form. Some fields are invalid.';
-            this.serverErrorMessage.set(msg);
-            this.form.setErrors({ serverError: true});  
-          /* Note Loading service.isLoading() becomes false automatically
-          because the finalize() block in your loading interceptor
-          runs after this catchError block. */
-        }
+       //✅ Explicit DTO mapping (Phase 4.3.4)
+       const payload: CreatePostDto = {
+          title: this.form.value.title!,
+          body: this.form.value.body!
+        };
+
+        this.postService.create(payload).pipe(
+          finalize(() => this.isSubmitting.set(false))
+          ).subscribe({
+            next: () => {
+              this.toast.showSuccess('Post created successfully')
+              this.route.navigateByUrl('post/index');
+            },
+          error: (err: HttpErrorResponse) => {
+            /* 2. The interceptor has already shown the toast for 401, 403, 500. 
+            You only use this block for component specific logic. */
+        
+        
+            if (err.status === 400 || err.status === 422) {
+              // Special case Validation errors are usually handled locally
+              // Rather than in a global interceptor toast.
+                const msg = err.error?.message ||
+                  'Please check the form. Some fields are invalid.';
+                this.serverErrorMessage.set(msg);
+                this.form.setErrors({ serverError: true});  
+              /* Note Loading service.isLoading() becomes false automatically
+              because the finalize() block in your loading interceptor
+              runs after this catchError block. */
+            }
       }
     });
     
