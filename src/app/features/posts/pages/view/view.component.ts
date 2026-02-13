@@ -1,16 +1,17 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PostService } from '../../services/post.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
 import { RouterModule } from '@angular/router';
 import { Post } from '../../models/post';
 import { HttpErrorResponse } from '@angular/common/http';
+import { PostDetailsCardComponent } from '../../components/post-details-card/post-details-card.component';
 
 @Component({
   selector: 'app-view',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, PostDetailsCardComponent],
   templateUrl: './view.component.html',
   styleUrl: './view.component.css'
 })
@@ -23,6 +24,7 @@ export class ViewComponent {
   public loadingService = inject(GlobalLoadingService);
   private postService = inject(PostService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
 
   ngOnInit():void{
@@ -45,6 +47,10 @@ export class ViewComponent {
           }
         });
 
+      }
+
+      goBack(): void {
+        this.router.navigate(['/post/index']);
       }
       
       

@@ -2,45 +2,23 @@
   <h1 class="text-center">Angular 17 CRUD Application</h1>
   <a routerLink="/post/create/" class="btn btn-success">Create Post</a>
  
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Id</th>
-        <th>Title</th>
-        <th>Post</th>
-        <th width="250px">Action</th>
-      </tr>
-    </thead>
-    <tbody>
+  
       @if(loadingService.isLoading() && posts().length === 0) {
         <tr>
             <td colspan="4" class="text-center">Loading posts...</td>
         </tr>
       } @else if (hasError()) {
-        <tr>
-          <td colspan="4" class="text-center" data-test="error-state-container">
+          <div class="text-center">
             <p>We couldn't load the posts...</p>
             <button type="button" class="btn btn-secondary" (click)="loadPosts()">Try Again</button>
-          </td>
-        </tr>       
+          </div>
+            
+              
       }  @else {
-        @for (post of posts(); track post.id) {
-          <tr>
-            <td>{{post.id}}</td>
-            <td>{{post.title}}</td>
-            <td>{{post.body}}</td>
-            <td>
-              <a [routerLink]="['/post/',post.id,'view']" class="btn btn-info">View</a>
-              <a [routerLink]="['/post/edit', post.id]" class="btn btn-primary">Edit</a>
-              <button class="btn btn-danger" type="button" (click)="deletePost(post.id)">Delete</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="4"><p>No posts found.</p></td>
-          </tr>
-        }
-      }
-    </tbody>
-  </table>
+        <app-post-list-table
+          [posts]="posts()"
+          (deletePost)="deletePost($event)"
+        />
+      }  
+   
 </div>

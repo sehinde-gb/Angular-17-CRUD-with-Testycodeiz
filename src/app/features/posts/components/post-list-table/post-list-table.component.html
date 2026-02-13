@@ -1,0 +1,32 @@
+
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Title</th>
+        <th>Post</th>
+        <th width="250px">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+        @for (post of posts; track post.id) {
+          <tr>
+            <td>{{post.id}}</td>
+            <td>{{post.title}}</td>
+            <td>{{post.body}}</td>
+            <td>
+              <a [routerLink]="['/post/',post.id,'view']" class="btn btn-info">View</a>
+              <a [routerLink]="['/post', post.id, 'edit']" class="btn btn-primary">Edit</a>
+              <button class="btn btn-danger" type="button" (click)="deletePost.emit(post.id)">Delete</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="text-center">
+              <p class="mb-0">No posts found</p>
+            </td>
+          </tr>
+        }
+    </tbody>
+</table>
+

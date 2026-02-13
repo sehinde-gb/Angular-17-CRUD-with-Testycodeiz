@@ -7,6 +7,8 @@ import { CommonModule } from '@angular/common';
 import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { UpdatePostDto } from '../../models/post.dto';
+import { finalize } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 @Component({
@@ -22,7 +24,6 @@ export class EditComponent  {
   post!:Post;
   form!:FormGroup;
 
-  
   public loadingService = inject(GlobalLoadingService);
   public postService = inject(PostService);
   private route = inject(ActivatedRoute);
@@ -32,9 +33,8 @@ export class EditComponent  {
 
   ngOnInit():void{
     // 1. Get id from route
-    //this.id = Number(this.route.snapshot.params['postId']);
     this.id = Number(this.route.snapshot.paramMap.get('postId'));
-    console.log('Edit id:', this.id);
+    
 
     // This code handles invalid ID's
     if(!this.id) {
@@ -97,13 +97,14 @@ export class EditComponent  {
         body: this.form.value.body!
        }; 
 
-      this.postService.update(this.id, payload).subscribe({
+      this.postService.update(this.id, payload).pipe(
+        finalize(() => this.isSubmitting.set(false))).subscribe({
         next: () => {
           this.toast.showSuccess('Post updated successfully');
           this.router.navigateByUrl('post/index');
 
         },
-        error: (err) => {
+        error: (err: HttpErrorResponse) => {
           // interceptor already toasts; keep local handling only for validation
           if (err.status === 400 || err.status === 422) {
             this.form.setErrors({ serverError: true });

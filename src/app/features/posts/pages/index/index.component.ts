@@ -7,56 +7,54 @@ import { GlobalLoadingService } from '../../../../core/services/global-loading.s
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Router } from '@angular/router';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { PostListTableComponent } from '../../components/post-list-table/post-list-table.component';
 
-
-interface LoadingState {
-  isLoading: boolean;
-  hasError: boolean;
-}
 
 @Component({
   selector: 'app-index',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PostListTableComponent],
   templateUrl: './index.component.html',
   styleUrl: './index.component.css'
 })
 
 export class IndexComponent {
 
- 
-  posts: WritableSignal<Post[]> = signal<Post[]>([])
-  public postService = inject(PostService);
-  loadingService: GlobalLoadingService = inject(GlobalLoadingService);
+  posts: WritableSignal<Post[]> = signal<Post[]>([]);
   hasError: WritableSignal<boolean> = signal(false); // The test looks for this transition
-  isLoading: WritableSignal<boolean> = signal(false);
+  public postService = inject(PostService);
+  public loadingService: GlobalLoadingService = inject(GlobalLoadingService);
   public auth = inject(AuthService);
   private router = inject(Router);
-
+  public toast = inject(ToastService);
 
   ngOnInit(): void {
     this.loadPosts()
   }
 
   loadPosts(): void {
-   
     this.hasError.set(false);
 
     this.postService.getAll().subscribe({
-      next: (data) => this.posts.set(data), 
+      next: (data: Post[]) =>{
+        this.posts.set(data);
+      },
       error: (_err: HttpErrorResponse): void => {
         this.posts.set([]);
-        this.hasError.set(true); // Sets the 'error-state-container'
-        
+        this.hasError.set(true); // Sets the 'error-state-container'    
       }
     })
   }
 
   deletePost(id: number): void {
-    this.postService.delete(id).subscribe((res: any): void => {
-      this.posts.update((currentPosts: Post[]) => currentPosts.filter((item: Post) => item.id !== id));
-      alert("Post Deleted Successfull !.")
-    })
+    this.postService.delete(id).subscribe({
+      next: () => {
+        this.posts.update((curr:Post[])=>curr.filter(p => p.id !== id));
+        this.toast.showSuccess('Post deleted');
+      }
+      // error -> interceptor will toast
+    });
   }
 
   logout(): void {

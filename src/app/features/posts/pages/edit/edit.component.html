@@ -1,6 +1,5 @@
 <div class="container">
   <h1 class="text-center">Update Post here.. ☺</h1>
-  <!-- <a href="#" routerLink="/post/index" class=" btn btn-warning">Back</a> -->
   <button type="button" class="btn btn-warning" (click)="goBack()">
   Back
   </button>
@@ -41,8 +40,8 @@
       </div>  
          
       <button class="btn btn-primary" type="submit" 
-      [disabled]="!form.valid || !form.dirty || loadingService.isLoading()">
-        @if(loadingService.isLoading()) {
+      [disabled]="!form.valid || !form.dirty || isSubmitting()">
+        @if(isSubmitting()) {
           Updating...
         } @else {
           Update Post

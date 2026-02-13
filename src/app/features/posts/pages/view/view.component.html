@@ -17,14 +17,11 @@
     </div>
 
   } @else {
-    @if (post(); as p) {
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">{{ p.title }}</h5>
-          <p class="card-text">{{ p.body }}</p>
-          <a class="btn btn-warning" routerLink="/post/index">Back</a>
-        </div>
-      </div>
+    @if (post()) {
+      <app-post-details-card
+        [post]="post()!"
+        (back)="goBack()"
+      />
     } @else {
       <p>No post found</p>
     }
