@@ -1,43 +1,32 @@
 <div class="container">
-  <h1 class="text-center">View Post</h1>
-  <a [routerLink]="['/post/index/']" class="btn btn-warning">Back</a>
+  <h1 class="text-center">Post Details</h1>
   <hr />
 
-  @if(loadingService.isLoading() && !post()) {
+  @if (loadingService.isLoading() && !post()) {
     <div class="text-center mt-5">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p>Loading post content...</p>
+      <div class="spinner-border text-primary"></div>
+      <p>Loading post...</p>
     </div>
+
+  } @else if (hasError()) {
+    <div class="alert alert-danger">
+      <p>We couldn't load this post.</p>
+      <button class="btn btn-outline-danger" type="button" (click)="loadPost()">
+        Retry
+      </button>
+    </div>
+
+  } @else {
+    @if (post(); as p) {
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ p.title }}</h5>
+          <p class="card-text">{{ p.body }}</p>
+          <a class="btn btn-warning" routerLink="/post/index">Back</a>
+        </div>
+      </div>
+    } @else {
+      <p>No post found</p>
+    }
   }
-
-  @if (post()) {
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">{{ post().title }}</h4>
-      </div>
-      <div class="card-body">
-        <p class="lead">{{ post().body }}</p>
-      </div>
-      <div class="card-footer text-muted">
-        Post ID: {{ post().id }}
-      </div>
-    </div>
-  }  
-    <div class="mt-3">
-      <a routerLink="/post/{{ post().id }}/edit" class="btn btn-primary">
-        Edit this Post
-      </a>
-    </div>
-
-  
-
-  <!-- <div>
-    <strong>ID:</strong><p>{{post.id}}</p>
-  </div>
-  <div>
-    <strong>Title:</strong><p>{{post.title}}</p>
-  </div>
-  <div>
-    <strong>Post:</strong><p>{{post.body}}</p>
-  </div> -->
-
+</div>

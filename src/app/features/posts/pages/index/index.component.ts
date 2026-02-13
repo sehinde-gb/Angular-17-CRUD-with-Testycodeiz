@@ -35,23 +35,19 @@ export class IndexComponent {
 
 
   ngOnInit(): void {
-  
-   this.loadPosts()
+    this.loadPosts()
   }
 
   loadPosts(): void {
-    this.isLoading.set(true);
+   
     this.hasError.set(false);
 
     this.postService.getAll().subscribe({
-      next: (data: Post[]): void => {
-        this.posts.set(data);
-        this.isLoading.set(false);
-      },
-      error: (err: HttpErrorResponse): void => {
+      next: (data) => this.posts.set(data), 
+      error: (_err: HttpErrorResponse): void => {
         this.posts.set([]);
         this.hasError.set(true); // Sets the 'error-state-container'
-        this.isLoading.set(false);
+        
       }
     })
   }
