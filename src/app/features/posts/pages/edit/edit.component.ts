@@ -1,125 +1,109 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { Post } from '../../models/post';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PostService } from '../../services/post.service';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
-import { ToastService } from '../../../../shared/services/toast.service';
-import { UpdatePostDto } from '../../models/post.dto';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { PostService } from '../../services/post.service';
+import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { UpdatePostDto } from '../../models/post.dto';
+import { PostFormComponent } from '../../components/post-form/post-form.component';
 
 @Component({
   selector: 'app-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PostFormComponent],
   templateUrl: './edit.component.html',
   styleUrl: './edit.component.css'
 })
-export class EditComponent  {
+export class EditComponent {
 
-  id!:number;
-  post!:Post;
-  form!:FormGroup;
+  id!: number;
+  form: FormGroup | null = null;
 
   public loadingService = inject(GlobalLoadingService);
-  public postService = inject(PostService);
+  private postService = inject(PostService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
+
   isSubmitting = signal(false);
+  hasError = signal(false);
 
-  ngOnInit():void{
-    // 1. Get id from route
+  ngOnInit(): void {
+    // 1) Get id from route
     this.id = Number(this.route.snapshot.paramMap.get('postId'));
-    
 
-    // This code handles invalid ID's
-    if(!this.id) {
+    // ✅ Correct invalid ID handling
+    if (Number.isNaN(this.id) || this.id <= 0) {
       this.router.navigateByUrl('/post/index');
       return;
     }
 
-    // 2. Initialise the form with empty strings so the controls exist immediately
+    // 2) Init form
     this.form = new FormGroup({
       title: new FormControl('', [Validators.required]),
-      body: new FormControl('',Validators.required),
-      // honeypot: new FormControl('') // only if you use in the template
-    });  
+      body: new FormControl('', [Validators.required]),
+    });
 
-    
-    // 3. Fetch the data (Interceptor triggers isLoading automatically)
+    // 3) Fetch data
+    this.loadPost();
+  }
+
+  // ✅ MUST be a class method (not inside ngOnInit)
+  loadPost(): void {
+    this.hasError.set(false);
+
     this.postService.find(this.id).subscribe({
       next: (data) => {
-        this.form.patchValue(data);
-        this.form.markAsPristine();
+        this.form?.patchValue(data);
+        this.form?.markAsPristine(); // so requireDirty works properly
       },
       error: () => {
-        // interceptor already toasts
-        this.form.setErrors({ loadFailed: true});
-
+        // interceptor already toasts globally
+        this.hasError.set(true);
       }
     });
-    
   }
 
-  get f(){
-      return this.form.controls;
-    }
-
-  goBack() {
-    // Check if the user has typed anything
-    if (this.form.dirty) {
+  goBack(): void {
+    if (this.form?.dirty) {
       const confirmLeave = confirm('You have unsaved changes. Are you sure you want to go back?');
-      if (!confirmLeave) return; // Stop if they click "Cancel"
+      if (!confirmLeave) return;
     }
-    
-    this.router.
-    navigateByUrl('/post/index');
+    this.router.navigateByUrl('/post/index');
   }
 
-  submit() {
-      if (this.form.invalid) {
-          this.form.markAllAsTouched();
-          return;
-      }
+ submit(): void {
+  if (!this.form) return; // ✅ guard for TS + safety
 
-      if (this.isSubmitting()) return;
-        this.isSubmitting.set(true);
-        
-      // if (this.form.get('honeypot')?.value) return;
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
+  }
 
-       //✅ Explicit DTO mapping
-       const payload: UpdatePostDto = {
-        title: this.form.value.title!,
-        body: this.form.value.body!
-       }; 
+  if (this.isSubmitting()) return;
+  this.isSubmitting.set(true);
 
-      this.postService.update(this.id, payload).pipe(
-        finalize(() => this.isSubmitting.set(false))).subscribe({
-        next: () => {
-          this.toast.showSuccess('Post updated successfully');
-          this.router.navigateByUrl('post/index');
+  const payload: UpdatePostDto = {
+    title: this.form.get('title')?.value ?? '',
+    body: this.form.get('body')?.value ?? ''
+  };
 
-        },
-        error: (err: HttpErrorResponse) => {
-          // interceptor already toasts; keep local handling only for validation
-          if (err.status === 400 || err.status === 422) {
-            this.form.setErrors({ serverError: true });
-          }
+  this.postService.update(this.id, payload)
+    .pipe(finalize(() => this.isSubmitting.set(false)))
+    .subscribe({
+      next: () => {
+        this.toast.showSuccess('Post updated successfully');
+        this.router.navigateByUrl('post/index');
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 400 || err.status === 422) {
+          this.form?.setErrors({ serverError: true }); // ✅ safe
         }
-      });
-
-    }
-
-    
+      }
+    });
   }
-
- 
-
-
-  
-
-  
+}

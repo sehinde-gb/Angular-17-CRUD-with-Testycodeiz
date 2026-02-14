@@ -1,54 +1,39 @@
 <div class="container">
   <h1 class="text-center">Update Post here.. ☺</h1>
-  <button type="button" class="btn btn-warning" (click)="goBack()">
-  Back
-  </button>
-  @if(loadingService.isLoading() && !form.value.title && !form.value.body) {
-      <div class="text-center">
-        <div class="spinner-border text-primary"></div>
-        <p>Fetching post details</p>
-      </div>
-  } @else {
-    <form [formGroup]="form" (ngSubmit)="submit()">
-        <!-- <div class="hidden-field" style="display:none;">
-          <input type="text" formControlName="honeypot">
-        </div> -->
-      <div class="form-group">
-        <label for="title">Title:</label>
-        <input type="text" id="title" formControlName="title"  
-        class="form-control" [readOnly]="loadingService.isLoading()">
-            @if(f['title'].touched && f['title'].invalid) {
-                <div class="alert alert-danger">
-                  @if(f['title'].errors && f['title'].errors['required']) {
-                    <div>"Title is Required"</div>  
-                  }
-                </div>
-            }  
-      </div>
-    
-      <div class="form-group">
-        <label for="body">Body:</label>
-        <input type="text" id="body" formControlName="body" 
-        class="form-control" [readOnly]="loadingService.isLoading()">
-          @if(f['body'].touched && f['body'].invalid) {
-            <div class="alert alert-danger">
-                @if(f['body'].errors && f['body'].errors['required']) {
-                    <div>"Post is Required"</div>
-                }
-            </div>     
-          }
-      </div>  
-         
-      <button class="btn btn-primary" type="submit" 
-      [disabled]="!form.valid || !form.dirty || isSubmitting()">
-        @if(isSubmitting()) {
-          Updating...
-        } @else {
-          Update Post
-        }
-      </button>
-    </form>
 
+  <button type="button" class="btn btn-warning" (click)="goBack()">
+    Back
+  </button>
+
+  @if (!form) {
+  <div class="text-center">
+    <div class="spinner-border text-primary"></div>
+    <p>Preparing form...</p>
+  </div>
+
+} @else if (loadingService.isLoading() && !form.get('title')?.value && !form.get('body')?.value) {
+  <div class="text-center">
+    <div class="spinner-border text-primary"></div>
+    <p>Fetching post details</p>
+  </div>
+
+} @else {
+  @if (hasError()) {
+    <div class="alert alert-danger">
+      <p>We couldn't load this post.</p>
+      <button class="btn btn-outline-danger" type="button" (click)="loadPost()">
+        Retry
+      </button>
+    </div>
+
+  } @else {
+    <app-post-form
+      [form]="form"
+      [isSubmitting]="isSubmitting()"
+      submitLabel="Update Post"
+      [requireDirty]="true"
+      (submitForm)="submit()"
+    />
   }
-  
+}
 </div>

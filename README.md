@@ -381,3 +381,49 @@ The refactor improves:
     Http-->>PostService: error
     PostService-->>PostPage: observable error()
   end
+
+
+Refactor Summary
+
+Authentication & Routing
+	•	Added AuthGuard to protect feature routes and redirect unauthenticated users to /auth/login.
+	•	Implemented returnUrl handling so users are redirected back to the originally requested route after login.
+	•	Added a wildcard 404 route to handle unknown URLs gracefully.
+	•	Introduced a header layout showing login/logout state and current role.
+
+HTTP Interceptors & Global UX
+	•	Implemented a GlobalLoadingService (signal/computed) to track active HTTP requests and expose a single isLoading() signal.
+	•	Added a Loading Interceptor that increments/decrements active request count using finalize() so loading state clears on success, error, or cancellation.
+	•	Added an Error Interceptor with:
+	•	Retry policy for GET requests only on network/5xx failures using backoff (timer(1000 * retryCount)).
+	•	Centralized mapping of key HTTP statuses (0, 401, 403, 404, 500) to user-friendly messages.
+	•	Explicit rethrow for validation errors (400/422) so components can handle form-specific feedback locally.
+
+API Layer & DTO Contract
+	•	Refactored PostService to use typed endpoints (Observable<Post>, Observable<Post[]>, etc.).
+	•	Introduced DTOs (CreatePostDto, UpdatePostDto) to enforce the API contract and prevent accidental/unsafe payload submission (e.g., extra fields).
+	•	Updated create/edit flows to perform explicit DTO mapping before calling the service.
+
+Local Component State & Reliability
+	•	Added local UI state using signals:
+	•	isSubmitting to prevent double-submit.
+	•	hasError to show retry UI states where appropriate (e.g., View/Edit fetch failures).
+	•	serverErrorMessage for inline form feedback on validation failures.
+	•	Ensured forms use markAllAsTouched() for predictable validation UX and markAsPristine() after loading existing data so dirty-checking is accurate.
+
+Smart vs Presentational Components
+	•	Refactored UI into reusable presentational components:
+	•	PostFormComponent handles rendering + validation messages and emits submitForm.
+	•	PostListTableComponent displays posts and emits deletePost.
+	•	PostDetailsCardComponent displays a post and emits back.
+	•	Smart pages (Create/Edit/Index/View) now own:
+	•	business logic
+	•	service calls
+	•	navigation
+	•	local state management
+	•	error-state UI transitions
+
+UX Improvements
+	•	Added user feedback via ToastService for success/errors.
+	•	Improved loading UX by disabling inputs while submitting and showing clear button label states (e.g., “Saving…”).
+	•	Added retry patterns for failed fetches (View/Edit) without duplicating global toast logic.
