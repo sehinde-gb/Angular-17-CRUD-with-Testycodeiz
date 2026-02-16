@@ -21,7 +21,7 @@ import { PostFormComponent } from '../../components/post-form/post-form.componen
 export class EditComponent {
 
   id!: number;
-  form: FormGroup | null = null;
+  form!: FormGroup;
 
   public loadingService = inject(GlobalLoadingService);
   private postService = inject(PostService);
