@@ -13,7 +13,6 @@ export class PostService {
 
   private apiURL = environment.apiUrl;
 
-  
 
   constructor(private http: HttpClient) {}
   
