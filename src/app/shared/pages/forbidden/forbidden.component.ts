@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,4 +9,12 @@ import { CommonModule } from '@angular/common';
   templateUrl: './forbidden.component.html',
   styleUrl: './forbidden.component.css'
 })
-export class ForbiddenComponent {}
+export class ForbiddenComponent {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  goBack() {
+    const from = this.route.snapshot.queryParamMap.get('from');
+    this.router.navigateByUrl(from ?? '/post/index');
+  }
+}

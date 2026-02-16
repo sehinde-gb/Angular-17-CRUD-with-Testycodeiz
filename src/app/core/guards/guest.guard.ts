@@ -6,10 +6,7 @@ export const guestGuard: CanActivateFn = () => {
   const storage = inject(TokenStorageService);
   const router = inject(Router);
 
-  if(storage.getToken()) {
-    router.navigate(['/post/index']);
-    return false;
-  }
-
-  return true;
+  return storage.getToken()
+    ? router.createUrlTree(['/post/index'])
+    : true;
 };
