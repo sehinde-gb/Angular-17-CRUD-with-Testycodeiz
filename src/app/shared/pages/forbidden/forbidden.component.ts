@@ -1,20 +1,21 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-forbidden',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterModule],
   templateUrl: './forbidden.component.html',
-  styleUrl: './forbidden.component.css'
+  styleUrl: './forbidden.component.css',
 })
 export class ForbiddenComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  goBack() {
-    const from = this.route.snapshot.queryParamMap.get('from');
-    this.router.navigateByUrl(from ?? '/post/index');
+  // e.g. /forbidden?from=/admin
+  private from = this.route.snapshot.queryParamMap.get('from');
+
+  goBack(): void {
+    this.router.navigateByUrl(this.from ?? '/post/index');
   }
 }
