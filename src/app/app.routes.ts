@@ -3,7 +3,7 @@ import { IndexComponent } from './features/posts/pages/index/index.component';
 import { CreateComponent } from './features/posts/pages/create/create.component';
 import { EditComponent } from './features/posts/pages/edit/edit.component';
 import { ViewComponent } from './features/posts/pages/view/view.component';
-
+import { postResolver} from './features/posts/resolvers/post.resolver';
 import { guestGuard } from './core/guards/guest.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
@@ -31,8 +31,19 @@ export const routes: Routes = [
     children: [
       { path: 'index', component: IndexComponent, title: 'Posts' },
       { path: 'create', component: CreateComponent, title: 'Create Posts' },
-      { path: ':postId/edit', component: EditComponent, title: 'Edit Post' },
-      { path: ':postId/view', component: ViewComponent, title: 'View Post' },
+      { path: ':postId/edit', 
+        component: EditComponent, 
+        title: 'Edit Post',
+        resolve: {post: postResolver}  
+      },
+      // This view uses the resolver to find the id
+      { path: ':postId/view', 
+        component: ViewComponent, 
+        title: 'View Post',
+        resolve: {post: postResolver},
+        // makes retry on same URL work reliably
+        runGuardsAndResolvers: 'always' 
+      },
       { path: '', redirectTo: 'index', pathMatch: 'full' }
     ]
   },

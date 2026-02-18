@@ -28,28 +28,26 @@ export class ViewComponent {
 
 
   ngOnInit():void{
-      this.postId = Number(this.route.snapshot.params['postId']);      
-      this.loadPost();
-    }
+      // Post is already resolved by the resolver
+      //const resolved = this.route.snapshot.data['post'];
+      const resolved = this.route.snapshot.data['post'] as Post | null;
+      this.post.set(resolved);
+     
+      // choose your meaning:
+      // - null means "not found" OR "failed"
+      // If you want null to be treated as an error state:
+      this.hasError.set(resolved === null);
 
+      
+    }
+      // Retry only re-navigates to the same URL and the resolver runs again.
       loadPost(): void {
         this.hasError.set(false);
-        this.post.set(null);
-
-        this.postService.find(this.postId).subscribe({
-          next: (data) => {
-            this.post.set(data);
-          },
-          // _err _ is I know the variable exists I am intentionally not using it (no error object)
-          error: (_err: HttpErrorResponse) => {
-            // Interceptor shows toast, but page still needs an error state.
-            this.hasError.set(true);
-          }
-        });
+        this.router.navigateByUrl(this.router.url);
 
       }
 
-      goBack(): void {
+      retry(): void {
         this.router.navigate(['/post/index']);
       }
       

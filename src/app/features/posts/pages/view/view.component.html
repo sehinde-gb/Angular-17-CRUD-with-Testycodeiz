@@ -20,7 +20,7 @@
     @if (post()) {
       <app-post-details-card
         [post]="post()!"
-        (back)="goBack()"
+        (back)="retry()"
       />
     } @else {
       <p>No post found</p>
