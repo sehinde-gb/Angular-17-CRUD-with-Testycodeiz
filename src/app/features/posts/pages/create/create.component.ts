@@ -35,17 +35,7 @@ export class CreateComponent {
     // honeypot: new FormControl('') // Uncomment if you are using it in a template
   });
 
-  goBack() {
-    // Check if the user has typed anything
-    if (this.form.dirty) {
-      const confirmLeave = confirm('You have unsaved changes. Are you sure you want to go back?');
-      if (!confirmLeave) return; // Stop if they click "Cancel"
-    }
     
-    this.route.navigateByUrl('/post/index');
-  }
-
-  
   submit(){
   
     this.serverErrorMessage.set(null);
@@ -62,12 +52,12 @@ export class CreateComponent {
        this.isSubmitting.set(true);
 
     //✅ Explicit DTO mapping (Phase 4.3.4)
-    const payload: CreatePostDto = {
+    const dto: CreatePostDto = {
       title: this.form.controls.title.value,
       body: this.form.controls.body.value
     };
 
-    this.postService.create(payload)
+    this.postService.create(dto)
     .pipe(finalize(() => this.isSubmitting.set(false)))
     .subscribe({
         next: () => {
@@ -92,7 +82,16 @@ export class CreateComponent {
       }
     });
     
+  }
 
+  goBack() {
+    // Check if the user has typed anything
+    if (this.form.dirty) {
+      const confirmLeave = confirm('You have unsaved changes. Are you sure you want to go back?');
+      if (!confirmLeave) return; // Stop if they click "Cancel"
+    }
+    
+    this.route.navigateByUrl('/post/index');
   }
 
   

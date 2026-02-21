@@ -1,39 +1,31 @@
 <div class="container">
   <h1 class="text-center">Update Post here.. ☺</h1>
 
-  <button type="button" class="btn btn-warning" (click)="goBack()">
-    Back
-  </button>
+  <button type="button" class="btn btn-warning" (click)="goBack()">Back</button>
 
-  @if (!form) {
-  <div class="text-center">
-    <div class="spinner-border text-primary"></div>
-    <p>Preparing form...</p>
-  </div>
-
-} @else if (loadingService.isLoading() && !form.get('title')?.value && !form.get('body')?.value) {
-  <div class="text-center">
-    <div class="spinner-border text-primary"></div>
-    <p>Fetching post details</p>
-  </div>
-
-} @else {
-  @if (hasError()) {
-    <div class="alert alert-danger">
-      <p>We couldn't load this post.</p>
-      <button class="btn btn-outline-danger" type="button" (click)="loadPost()">
-        Retry
-      </button>
+  @if (loadingService.isLoading()) {
+    <div class="text-center">
+      <div class="spinner-border text-primary"></div>
+      <p>Fetching post details</p>
     </div>
 
   } @else {
-    <app-post-form
-      [form]="form"
-      [isSubmitting]="isSubmitting()"
-      submitLabel="Update Post"
-      [requireDirty]="true"
-      (submitForm)="submit()"
-    />
+    @if (hasError()) {
+      <div class="alert alert-danger">
+        <p>We couldn't load this post.</p>
+        <button class="btn btn-outline-danger" type="button" (click)="retry()">
+          Retry
+        </button>
+      </div>
+
+    } @else {
+      <app-post-form
+        [form]="form"
+        [isSubmitting]="isSubmitting()"
+        submitLabel="Update Post"
+        [requireDirty]="true"
+        (submitForm)="submit()"
+      />
+    }
   }
-}
 </div>

@@ -1,5 +1,5 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { authInterceptor} from './core/interceptors/auth.interceptor'
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -8,5 +8,5 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes), provideAnimations(), provideHttpClient(withInterceptors([authInterceptor,loadingInterceptor, errorInterceptor]))] // Registering the interceptor here
+  providers: [provideRouter(routes, withRouterConfig({ onSameUrlNavigation: 'reload'})), provideAnimations(), provideHttpClient(withInterceptors([authInterceptor,loadingInterceptor, errorInterceptor]))] // Registering the interceptor here
 };

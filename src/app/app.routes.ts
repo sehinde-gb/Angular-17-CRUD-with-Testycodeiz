@@ -34,7 +34,8 @@ export const routes: Routes = [
       { path: ':postId/edit', 
         component: EditComponent, 
         title: 'Edit Post',
-        resolve: {post: postResolver}  
+        resolve: {post: postResolver},
+        runGuardsAndResolvers: 'always'  
       },
       // This view uses the resolver to find the id
       { path: ':postId/view', 

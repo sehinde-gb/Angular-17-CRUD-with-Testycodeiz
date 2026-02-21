@@ -11,7 +11,7 @@
   } @else if (hasError()) {
     <div class="alert alert-danger">
       <p>We couldn't load this post.</p>
-      <button class="btn btn-outline-danger" type="button" (click)="loadPost()">
+      <button class="btn btn-outline-danger" type="button" (click)="retry()">
         Retry
       </button>
     </div>
@@ -20,7 +20,7 @@
     @if (post()) {
       <app-post-details-card
         [post]="post()!"
-        (back)="retry()"
+        (back)="goBack()"
       />
     } @else {
       <p>No post found</p>

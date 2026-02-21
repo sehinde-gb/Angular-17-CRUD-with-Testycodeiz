@@ -1,5 +1,3 @@
-// src/app/features/posts/pages/index/index.component.spec.ts
-
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
