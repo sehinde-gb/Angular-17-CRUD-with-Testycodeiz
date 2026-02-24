@@ -7,6 +7,7 @@ import { postResolver} from './features/posts/resolvers/post.resolver';
 import { guestGuard } from './core/guards/guest.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { postListResolver } from './features/posts/resolvers/postList.resolver';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'post/index', pathMatch: 'full' },
@@ -29,7 +30,14 @@ export const routes: Routes = [
     path: 'post',
     canActivate: [authGuard],
     children: [
-      { path: 'index', component: IndexComponent, title: 'Posts' },
+      { 
+        // This view uses the resolver to list all posts
+        path: 'index', 
+        component: IndexComponent, 
+        title: 'Posts',
+        resolve: {posts: postListResolver},
+        runGuardsAndResolvers: 'always'
+       },
       { path: 'create', component: CreateComponent, title: 'Create Posts' },
       { path: ':postId/edit', 
         component: EditComponent, 

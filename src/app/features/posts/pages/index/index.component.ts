@@ -9,8 +9,8 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { Router } from '@angular/router';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { PostListTableComponent } from '../../components/post-list-table/post-list-table.component';
-
-
+import { postListResolver } from '../../resolvers/postList.resolver';
+import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-index',
   standalone: true,
@@ -21,11 +21,13 @@ import { PostListTableComponent } from '../../components/post-list-table/post-li
 
 export class IndexComponent {
 
-  posts: WritableSignal<Post[]> = signal<Post[]>([]);
+  //posts: WritableSignal<Post[]> = signal<Post[]>([]);
   hasError: WritableSignal<boolean> = signal(false); // The test looks for this transition
   public postService = inject(PostService);
   public loadingService: GlobalLoadingService = inject(GlobalLoadingService);
   public auth = inject(AuthService);
+  public postList = inject(postListResolver);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   public toast = inject(ToastService);
 
@@ -36,7 +38,20 @@ export class IndexComponent {
   loadPosts(): void {
     this.hasError.set(false);
 
-    this.postService.getAll().subscribe({
+    // Data is retrieved from the 'posts' key defined in the route config
+    this.route.data.subscribe({
+      next: (data) => {
+        this.postList = data['postList'];
+        console.log('Posts loaded successfully');
+
+      },
+      error: (_err: HttpErrorResponse): void => {
+        this.postList.set([]);
+        this.hasError.set(true); // Sets the 'error-state-container'
+      }
+    });
+    
+    /* this.postService.getAll().subscribe({
       next: (data: Post[]) =>{
         this.posts.set(data);
       },
@@ -44,13 +59,13 @@ export class IndexComponent {
         this.posts.set([]);
         this.hasError.set(true); // Sets the 'error-state-container'    
       }
-    })
+    }) */
   }
 
   deletePost(id: number): void {
     this.postService.delete(id).subscribe({
       next: () => {
-        this.posts.update((curr:Post[])=>curr.filter(p => p.id !== id));
+        this.postList.update((curr:Post[])=>curr.filter(p => p.id !== id));
         this.toast.showSuccess('Post deleted');
       }
       // error -> interceptor will toast
