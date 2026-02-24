@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Post } from '../../models/post';
 
-
+// test
 @Component({
   selector: 'app-post-details-card',
   standalone: true,
