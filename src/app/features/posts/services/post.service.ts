@@ -15,7 +15,7 @@ export class PostService {
 
 
   constructor(private http: HttpClient) {}
-  
+
   getAll(): Observable<Post[]> {
     return this.http.get<Post[]>(`${this.apiURL}/posts`);
   }
@@ -32,8 +32,11 @@ export class PostService {
     return this.http.put<Post>(`${this.apiURL}/posts/${id}`, payload);
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiURL}/posts/${id}`);
+  // This emits either undefined or it completes this is because it uses <void> the type void means it expects undefined or success.
+  delete(id: number) {
+  return this.http.delete<void>(`${this.apiURL}/posts/${id}`);
+
   }
-  
+
+
 }

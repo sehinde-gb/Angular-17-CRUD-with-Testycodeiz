@@ -32,7 +32,7 @@ export class EditComponent {
   isSubmitting = signal(false);
   hasError = signal(false);
 
- 
+
   ngOnInit(): void {
     // 1) Get id from the resolver as a Post object or null
    const resolved = this.route.snapshot.data['post'] as Post | null;
@@ -47,13 +47,13 @@ export class EditComponent {
       this.hasError.set(true);
       return;
     }
-    
+
     this.hasError.set(false);
      // We can assume this is an OK id retrieved from the Post object
     this.id = resolved.id; // from resolver
     this.form.patchValue({ title: resolved.title, body: resolved.body});
     this.form.markAsPristine(); // so requireDirty works
- 
+
   }
 
   goBack(): void {
@@ -67,10 +67,10 @@ export class EditComponent {
   // on click of retry it sets the error to false and reruns the resolver
   retry(): void {
     this.hasError.set(false);
-    
+
     // Requires onSameUrlNavigation: 'reload' app routes
    this.router.navigateByUrl(this.router.url);
-    
+
   }
 
  submit(): void {
@@ -93,7 +93,7 @@ export class EditComponent {
     .subscribe({
       next: () => {
         this.toast.showSuccess('Post updated successfully');
-        this.router.navigateByUrl('post/index');
+        this.router.navigateByUrl('/post/index');
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 400 || err.status === 422) {

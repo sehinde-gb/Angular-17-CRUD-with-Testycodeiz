@@ -1,140 +1,161 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { of, throwError } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { BehaviorSubject, of } from 'rxjs';
+
 import { IndexComponent } from './index.component';
+import { Post } from '../../models/post';
 import { PostService } from '../../services/post.service';
 import { GlobalLoadingService } from '../../../../core/services/global-loading.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
-import { Post } from '../../models/post';
+import { PostListTableComponent } from '../../components/post-list-table/post-list-table.component';
 
-/**
- * ✅ STUB CHILD COMPONENT
- * We only care that Index:
- * - renders it (or not)
- * - passes posts into it
- */
 @Component({
   selector: 'app-post-list-table',
   standalone: true,
-  template: `
-    <div data-test="post-list-table">
-      rows: {{ posts?.length ?? 0 }}
-    </div>
-  `,
+  template: `<div data-test="post-list-table">rows: {{ posts?.length ?? 0 }}</div>`
 })
 class PostListTableStubComponent {
   @Input() posts: Post[] = [];
   @Output() deletePost = new EventEmitter<number>();
 }
 
-describe('IndexComponent (template states)', () => {
+describe('IndexComponent (resolver template states)', () => {
   let fixture: ComponentFixture<IndexComponent>;
-  let component: IndexComponent;
+  let router: Router;
   let postServiceSpy: jasmine.SpyObj<PostService>;
+  let component: IndexComponent;
+  let routeData$: BehaviorSubject<any>;
+  let toastSpy: jasmine.SpyObj<ToastService>;
+  let authSpy: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
-    postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['getAll', 'delete']);
+    routeData$ = new BehaviorSubject<any>({ postList: [] });
+
+    toastSpy = jasmine.createSpyObj<ToastService>('ToastService', ['showSuccess', 'showError']);
+    postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['delete']);
+    authSpy = jasmine.createSpyObj<AuthService>('AuthService', ['logout', 'isAuthenticated']);
+    authSpy.isAuthenticated.and.returnValue(true);
 
     await TestBed.configureTestingModule({
-      // NOTE: IndexComponent is standalone, so we import it.
-      // We also import the stub so Angular can compile it.
-      imports: [IndexComponent, PostListTableStubComponent],
+      imports: [IndexComponent],
       providers: [
-        provideRouter([]),
-
+        provideRouter([]), // ✅ real Router so RouterLink works
+        { provide: ActivatedRoute, useValue: { data: routeData$.asObservable() } },
         { provide: PostService, useValue: postServiceSpy },
-
-        // Minimal stubs for injected services used by IndexComponent
-        {
-          provide: GlobalLoadingService,
-          useValue: { isLoading: () => false, show: () => {}, hide: () => {} },
-        },
-        { provide: ToastService, useValue: { showSuccess: () => {}, showError: () => {} } },
-        { provide: AuthService, useValue: { logout: () => {}, isAuthenticated: () => true } },
+        { provide: GlobalLoadingService, useValue: { isLoading: () => false } },
+        { provide: ToastService, useValue: toastSpy },
+        { provide: AuthService, useValue: authSpy },
       ],
     })
-      // ✅ CRITICAL: Override IndexComponent's imports so it uses OUR stub
-      // instead of the real PostListTableComponent listed in IndexComponent decorator.
       .overrideComponent(IndexComponent, {
-        set: {
-          // Replaces the component's own `imports: [...]` for this test only
-          imports: [PostListTableStubComponent],
-        },
+        remove: { imports: [PostListTableComponent] },
+        add: { imports: [PostListTableStubComponent] }
       })
       .compileComponents();
 
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigateByUrl').and.resolveTo(true);
+    spyOn(router, 'navigate').and.resolveTo(true);
+    spyOnProperty(router, 'url', 'get').and.returnValue('/post/index');
+
     fixture = TestBed.createComponent(IndexComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges(); // ngOnInit subscribes to route.data
   });
 
-  it('renders the post list table when posts load successfully', () => {
-    // ARRANGE
+  it('clicking retry calls retry() and can recover when new route data arrives', async () => {
+    // 1) error emission
+    routeData$.next({ postList: null });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain("We couldn't load the posts...");
+
+    // 2) click retry
+    const btn = fixture.debugElement.query(By.css('button.btn.btn-secondary'));
+    expect(btn).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
+    btn.nativeElement.click();
+
+    await fixture.whenStable();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/post/index');
+
+    // 3) recovery emission
+    routeData$.next({
+      postList: [{ id: 1, title: 'Recovered', body: 'OK' } as Post]
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
+    expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
+
+    const stub = stubDe!.componentInstance as PostListTableStubComponent;
+    expect(stub.posts.length).toBe(1);
+    expect(fixture.nativeElement.textContent).not.toContain("We couldn't load the posts...");
+  });
+
+  it('renders the table when resolver returns posts (success state)', async () => {
     const mockPosts: Post[] = [
       { id: 1, title: 'Hello', body: 'World' } as Post,
       { id: 2, title: 'Hi', body: 'There' } as Post,
     ];
-    postServiceSpy.getAll.and.returnValue(of(mockPosts));
 
-    // ACT (ngOnInit -> loadPosts -> subscribe -> template updates)
+    routeData$.next({ postList: mockPosts });
     fixture.detectChanges();
+    await fixture.whenStable();
 
-    // ASSERT: error state not shown
+    const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
+    expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
+
+    const stub = stubDe!.componentInstance as PostListTableStubComponent;
+    expect(stub.posts.length).toBe(2);
     expect(fixture.nativeElement.textContent).not.toContain("We couldn't load the posts...");
-
-    // ASSERT: stub DOM exists
-    const table = fixture.debugElement.query(By.css('[data-test="post-list-table"]'));
-    expect(table).withContext(fixture.nativeElement.innerHTML).toBeTruthy();
-
-    // ASSERT: stub instance received posts via @Input
-    const childDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
-    expect(childDe).not.toBeNull();
-
-    const child = childDe!.componentInstance as PostListTableStubComponent;
-    expect(child.posts.length).toBe(2);
   });
 
-  it('renders the error state when getAll fails', () => {
-    // ARRANGE
-    postServiceSpy.getAll.and.returnValue(
-      throwError(() => new HttpErrorResponse({ status: 500 }))
-    );
-
-    // ACT
+  it('renders error state when resolver returns null', async () => {
+    routeData$.next({ postList: null });
     fixture.detectChanges();
+    await fixture.whenStable();
 
-    // ASSERT: error UI shown
     expect(fixture.nativeElement.textContent).toContain("We couldn't load the posts...");
 
-    // ASSERT: stub not rendered
-    const childDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
-    expect(childDe).toBeNull();
+    const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
+    expect(stubDe).toBeNull();
   });
 
-  it('calls loadPosts() again when clicking Try Again', () => {
-    // ARRANGE: first call fails -> shows error state
-    postServiceSpy.getAll.and.returnValue(
-      throwError(() => new HttpErrorResponse({ status: 500 }))
-    );
+  it('deletePost calls service and updates the list & toasts success', async () => {
+    routeData$.next({
+      postList: [
+        { id: 1, title: 'A', body: 'B' } as Post,
+        { id: 2, title: 'C', body: 'D' } as Post,
+      ]
+    });
     fixture.detectChanges();
 
-    // Next call succeeds on retry
-    postServiceSpy.getAll.and.returnValue(
-      of([{ id: 1, title: 'A', body: 'B' } as Post])
-    );
+    postServiceSpy.delete.and.returnValue(of(void 0));
 
-    // ACT: click retry
-    const btn = fixture.debugElement.query(By.css('button.btn.btn-secondary'));
-    expect(btn).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
-
-    btn.nativeElement.click();
+    component.deletePost(1);
     fixture.detectChanges();
+    await fixture.whenStable();
 
-    // ASSERT
-    expect(postServiceSpy.getAll).toHaveBeenCalledTimes(2);
-    expect(fixture.nativeElement.textContent).not.toContain("We couldn't load the posts...");
+    expect(postServiceSpy.delete).toHaveBeenCalledWith(1);
+
+    const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
+    expect(stubDe).not.toBeNull();
+
+    const stub = stubDe!.componentInstance as PostListTableStubComponent;
+    expect(stub.posts.length).toBe(1);
+
+    expect(toastSpy.showSuccess).toHaveBeenCalledWith('Post deleted');
+  });
+
+  it('logout calls auth.logout and navigates to /auth/login', async () => {
+    component.logout();
+    await fixture.whenStable();
+
+    expect(authSpy.logout).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/auth/login']);
   });
 });

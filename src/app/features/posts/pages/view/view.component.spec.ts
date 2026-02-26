@@ -45,8 +45,8 @@ describe('ViewComponent (resolver + template states)', () => {
     TestBed.overrideProvider(ActivatedRoute, {
       useValue: {
         snapshot: {
-          data: { post: resolvedPost },
-          params: { postId: resolvedPost?.id ?? 1 }
+          data: { post: resolvedPost }
+
         }
       }
     });
@@ -73,7 +73,7 @@ describe('ViewComponent (resolver + template states)', () => {
         // ✅ ActivatedRoute will be overridden per test via setupWithResolvedPost()
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { data: { post: null }, params: { postId: 1 } } }
+         useValue: { snapshot: { data: { post: null } } }
         }
       ]
     })
@@ -116,10 +116,10 @@ describe('ViewComponent (resolver + template states)', () => {
 
     fixture = TestBed.createComponent(ViewComponent);
     component = fixture.componentInstance;
-    
+
     // Showtime ACT
     fixture.detectChanges();
-    
+
     // ASSERT
     expect(fixture.nativeElement.textContent).toContain("We couldn't load this post.");
 

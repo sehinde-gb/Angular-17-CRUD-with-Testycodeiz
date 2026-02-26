@@ -1,8 +1,8 @@
 <div class="container">
   <h1 class="text-center">Angular 17 CRUD Application</h1>
   <a routerLink="/post/create/" class="btn btn-success">Create Post</a>
- 
-  
+
+
       @if(loadingService.isLoading() && postList().length === 0) {
         <tr>
             <td colspan="4" class="text-center">Loading posts...</td>
@@ -10,15 +10,15 @@
       } @else if (hasError()) {
           <div class="text-center">
             <p>We couldn't load the posts...</p>
-            <button type="button" class="btn btn-secondary" (click)="loadPosts()">Try Again</button>
+           <button type="button" class="btn btn-secondary" (click)="retry()">Retry</button>
           </div>
-            
-              
+
+
       }  @else {
         <app-post-list-table
           [posts]="postList()"
           (deletePost)="deletePost($event)"
         />
-      }  
-   
+      }
+
 </div>

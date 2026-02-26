@@ -29,29 +29,30 @@ export const routes: Routes = [
   {
     path: 'post',
     canActivate: [authGuard],
+
     children: [
-      { 
+      {
         // This view uses the resolver to list all posts
-        path: 'index', 
-        component: IndexComponent, 
+        path: 'index',
+        component: IndexComponent,
         title: 'Posts',
-        resolve: {posts: postListResolver},
+        resolve: {postList: postListResolver},
         runGuardsAndResolvers: 'always'
        },
       { path: 'create', component: CreateComponent, title: 'Create Posts' },
-      { path: ':postId/edit', 
-        component: EditComponent, 
+      { path: ':postId/edit',
+        component: EditComponent,
         title: 'Edit Post',
         resolve: {post: postResolver},
-        runGuardsAndResolvers: 'always'  
+        runGuardsAndResolvers: 'always'
       },
       // This view uses the resolver to find the id
-      { path: ':postId/view', 
-        component: ViewComponent, 
+      { path: ':postId/view',
+        component: ViewComponent,
         title: 'View Post',
         resolve: {post: postResolver},
         // makes retry on same URL work reliably
-        runGuardsAndResolvers: 'always' 
+        runGuardsAndResolvers: 'always'
       },
       { path: '', redirectTo: 'index', pathMatch: 'full' }
     ]

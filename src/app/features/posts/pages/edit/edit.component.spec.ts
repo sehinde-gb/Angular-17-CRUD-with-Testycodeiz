@@ -43,12 +43,12 @@ class PostFormStubComponent {
 describe('EditComponent (container, resolver)', () => {
   let fixture: ComponentFixture<EditComponent>;
   let component: EditComponent;
-
   let postServiceSpy: jasmine.SpyObj<PostService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let toastSpy: jasmine.SpyObj<ToastService>;
 
   // ✅ single ActivatedRoute stub we can mutate per test
+  // activatedRouteStub & setResolvedPost relate to | ngOnInit const resolved = this.route.snapshot.data['post']......
   const activatedRouteStub: any = {
     snapshot: {
       data: { post: null as Post | null }
@@ -64,6 +64,7 @@ describe('EditComponent (container, resolver)', () => {
     routerSpy = jasmine.createSpyObj<Router>('Router', ['navigateByUrl', 'navigate'], {
       url: '/post/1/edit'
     });
+    routerSpy.navigateByUrl.and.resolveTo(true);
     toastSpy = jasmine.createSpyObj<ToastService>('ToastService', ['showSuccess', 'showError']);
 
     await TestBed.configureTestingModule({
@@ -103,6 +104,7 @@ describe('EditComponent (container, resolver)', () => {
 
   it('calls PostService.update(id, dto) when stub emits submitForm (success path)', () => {
     setResolvedPost({ id: 1, title: 'Old', body: 'OldBody' } as Post);
+    // returnValue of is a fake observable that simulates the observable result that the real service will return.
     postServiceSpy.update.and.returnValue(of({} as any));
 
     fixture = TestBed.createComponent(EditComponent);
@@ -111,8 +113,8 @@ describe('EditComponent (container, resolver)', () => {
     fixture.detectChanges();
 
     // make it dirty + valid
-    component.form.controls['title'].setValue('New');
-    component.form.controls['body'].setValue('NewBody');
+    component.form.get('title')?.setValue('New');
+    component.form.get('body')?.setValue('NewBody');
     component.form.markAsDirty();
 
     const stubDe = fixture.debugElement.query(By.directive(PostFormStubComponent));
@@ -121,10 +123,11 @@ describe('EditComponent (container, resolver)', () => {
     const stub = stubDe!.componentInstance as PostFormStubComponent;
     stub.submitForm.emit();
 
+
     const expectedDto: UpdatePostDto = { title: 'New', body: 'NewBody' };
     expect(postServiceSpy.update).toHaveBeenCalledWith(1, expectedDto);
     expect(toastSpy.showSuccess).toHaveBeenCalled();
-    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('post/index');
+    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
   });
 
   it('renders error state when resolver returns null', () => {
@@ -144,6 +147,7 @@ describe('EditComponent (container, resolver)', () => {
 
   it('sets form serverError for 400/422 on update', () => {
     setResolvedPost({ id: 1, title: 'A', body: 'B' } as Post);
+
     postServiceSpy.update.and.returnValue(
       throwError(() => new HttpErrorResponse({ status: 422 }))
     );
@@ -153,8 +157,8 @@ describe('EditComponent (container, resolver)', () => {
 
     fixture.detectChanges();
 
-    component.form.controls['title'].setValue('New');
-    component.form.controls['body'].setValue('NewBody');
+    component.form.get('title')?.setValue('New');
+    component.form.get('body')?.setValue('NewBody');
     component.form.markAsDirty();
 
     component.submit();

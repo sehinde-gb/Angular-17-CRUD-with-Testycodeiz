@@ -1,17 +1,14 @@
-import { ResolveFn, Router } from '@angular/router';
-import { PostService } from '../services/post.service';
+import { ResolveFn } from '@angular/router';
 import { inject } from '@angular/core';
-import { Post } from '../models/post';
 import { catchError, of } from 'rxjs';
 
-export const postListResolver: ResolveFn<Post[]> = () => {
+import { PostService } from '../services/post.service';
+import { Post } from '../models/post';
 
-  const postService = inject(PostService); 
-  const router = inject(Router);
-  
+export const postListResolver: ResolveFn<Post[] | null> = () => {
+  const postService = inject(PostService);
+
   return postService.getAll().pipe(
-    catchError(() => {
-      return of([] as Post[]);
-    })
+    catchError(() => of(null))
   );
 };
