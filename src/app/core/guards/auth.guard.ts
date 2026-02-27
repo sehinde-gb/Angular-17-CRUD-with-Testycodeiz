@@ -8,10 +8,11 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (storage.getToken()) return true;
 
+  // In tests we return this with a fake | const args = routerSpy.createUrlTree.calls.mostRecent().args;
   return router.createUrlTree(
     ['/auth/login'],
     { queryParams: { returnUrl: state.url}}
   );
- 
+
 
 };

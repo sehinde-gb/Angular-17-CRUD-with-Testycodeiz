@@ -12,6 +12,8 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const role = storage.getRole();
   if (role && requiredRoles.includes(role)) return true;
 
+  // Url redirect
+  // In tests we return this with a fake | const args = routerSpy.createUrlTree.calls.mostRecent().args;
   return router.createUrlTree(['/forbidden'], {
     queryParams: { from: state.url }
   });

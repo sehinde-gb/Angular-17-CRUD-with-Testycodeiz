@@ -7,6 +7,7 @@ export const guestGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   return storage.getToken()
+    // In tests we return this with a fake | const args = routerSpy.createUrlTree.calls.mostRecent().args;
     ? router.createUrlTree(['/post/index'])
     : true;
 };

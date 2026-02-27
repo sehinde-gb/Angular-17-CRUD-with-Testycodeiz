@@ -69,7 +69,7 @@ export class EditComponent {
     this.hasError.set(false);
 
     // Requires onSameUrlNavigation: 'reload' app routes
-   this.router.navigateByUrl(this.router.url);
+    this.router.navigateByUrl(this.router.url);
 
   }
 

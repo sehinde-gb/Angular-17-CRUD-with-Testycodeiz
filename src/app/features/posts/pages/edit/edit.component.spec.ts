@@ -165,4 +165,48 @@ describe('EditComponent (container, resolver)', () => {
 
     expect(component.form.errors?.['serverError']).toBeTrue();
   });
+
+  it('navigates back when form clean', () => {
+    setResolvedPost({ id: 1, title: 'A', body: 'B'} as Post);
+
+    fixture = TestBed.createComponent(EditComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.goBack();
+
+    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
+  });
+
+ it('retry() reloads the current route', () => {
+  // Need to simulate the hasError = true without this my test fails
+    setResolvedPost(null); // error state not strictly required for calling method
+
+    fixture = TestBed.createComponent(EditComponent);
+    component = fixture.componentInstance;
+
+    fixture.detectChanges();
+
+    component.retry();
+
+    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/edit'); // routerSpy.url
+  });
+
+  it('clicking Retry button calls retry()', () => {
+    // Need to simulate the hasError = true without this my test fails
+    setResolvedPost(null); // ✅ makes hasError true -> renders Retry button
+
+    fixture = TestBed.createComponent(EditComponent);
+    component = fixture.componentInstance;
+
+    fixture.detectChanges();
+
+    const retryBtnDe = fixture.debugElement.query(By.css('button.btn.btn-outline-danger'));
+    expect(retryBtnDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
+
+    retryBtnDe.nativeElement.click();
+
+    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/edit');
+  });
+
 });
