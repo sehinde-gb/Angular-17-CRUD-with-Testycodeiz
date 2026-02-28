@@ -38,12 +38,14 @@ export class IndexComponent {
   this.route.data.subscribe((data) => {
     const posts = data['postList'] as Post[] | null | undefined;
 
+    // error state (resolver returned null/undefined)
     if (!Array.isArray(posts)) {
       this.postList.set([]);
       this.hasError.set(true);
       return;
     }
 
+    // success state
     this.postList.set(posts);
     this.hasError.set(false);
   });

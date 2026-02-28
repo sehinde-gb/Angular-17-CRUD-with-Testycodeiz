@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {  Observable } from 'rxjs';
 import { Post } from '../models/post'
 import { environment} from '../../../../environments/environment';
-import { ApiPaths} from '../../../core/api/api-paths';
 import {CreatePostDto, UpdatePostDto} from '../models/post.dto';
 
 @Injectable({
