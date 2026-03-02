@@ -1,11 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import { EditComponent } from './edit.component';
 import { PostService } from '../../services/post.service';
 import { ToastService } from '../../../../shared/services/toast.service';
@@ -13,32 +11,9 @@ import { GlobalLoadingService } from '../../../../core/services/global-loading.s
 import { UpdatePostDto } from '../../models/post.dto';
 import { PostFormComponent } from '../../components/post-form/post-form.component';
 import { Post } from '../../models/post';
+import { PostFormStubComponent } from 'src/app/tests/helpers/stubs/post-form.stub';
 
-/**
- * ✅ Stub for <app-post-form>
- * We only care that Edit passes inputs and reacts to outputs.
- */
-@Component({
-  selector: 'app-post-form',
-  standalone: true,
-  imports: [ReactiveFormsModule],
-  template: `
-    <div data-test="post-form-stub">
-      label: {{ submitLabel }}
-      <button type="button" data-test="emit-submit" (click)="submitForm.emit()">
-        Emit Submit
-      </button>
-    </div>
-  `
-})
-class PostFormStubComponent {
-  @Input({ required: true }) form!: FormGroup;
-  @Input() isSubmitting = false;
-  @Input() submitLabel = 'Save';
-  @Input() requireDirty = false;
 
-  @Output() submitForm = new EventEmitter<void>();
-}
 
 describe('EditComponent (container, resolver)', () => {
   let fixture: ComponentFixture<EditComponent>;
@@ -70,6 +45,7 @@ describe('EditComponent (container, resolver)', () => {
     await TestBed.configureTestingModule({
       imports: [EditComponent],
       providers: [
+        // these are the mocks...
         { provide: ActivatedRoute, useValue: activatedRouteStub },
         { provide: PostService, useValue: postServiceSpy },
         { provide: Router, useValue: routerSpy },
@@ -86,16 +62,21 @@ describe('EditComponent (container, resolver)', () => {
   });
 
   it('renders post-form stub and passes expected inputs when resolver provides a post', () => {
+    // Arrange pass in a post sent by the resolver
     setResolvedPost({ id: 1, title: 'A', body: 'B' } as Post);
 
+    // Build the page
     fixture = TestBed.createComponent(EditComponent);
     component = fixture.componentInstance;
 
+    // Act run lifecycle hook
     fixture.detectChanges(); // ngOnInit runs, creates form, patches values
 
+    // Assertion expect stub to not be null
     const stubDe = fixture.debugElement.query(By.directive(PostFormStubComponent));
     expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
 
+    // And expect the label is passed from the component to the stub component
     const stub = stubDe!.componentInstance as PostFormStubComponent;
     expect(stub.submitLabel).toBe('Update Post');
     expect(stub.requireDirty).toBeTrue();
@@ -103,27 +84,33 @@ describe('EditComponent (container, resolver)', () => {
   });
 
   it('calls PostService.update(id, dto) when stub emits submitForm (success path)', () => {
+     // Arrange pass in a post sent by the resolver
     setResolvedPost({ id: 1, title: 'Old', body: 'OldBody' } as Post);
-    // returnValue of is a fake observable that simulates the observable result that the real service will return.
+
+    // Call the post service and returnValue of is a fake observable that simulates the observable result that the real service will return.
     postServiceSpy.update.and.returnValue(of({} as any));
 
+    // Create the edit component
     fixture = TestBed.createComponent(EditComponent);
     component = fixture.componentInstance;
 
+    // Act run lifecycle hook
     fixture.detectChanges();
 
-    // make it dirty + valid
+    // Amend the form and make it dirty + valid
     component.form.get('title')?.setValue('New');
     component.form.get('body')?.setValue('NewBody');
     component.form.markAsDirty();
 
+    // Assert check the form and expect it to not be null
     const stubDe = fixture.debugElement.query(By.directive(PostFormStubComponent));
     expect(stubDe).not.toBeNull();
 
+    // The ! means it isnt null and this is assigned and submitted
     const stub = stubDe!.componentInstance as PostFormStubComponent;
     stub.submitForm.emit();
 
-
+    // Assert that the Dto's have passed to the stub and the update function has been called
     const expectedDto: UpdatePostDto = { title: 'New', body: 'NewBody' };
     expect(postServiceSpy.update).toHaveBeenCalledWith(1, expectedDto);
     expect(toastSpy.showSuccess).toHaveBeenCalled();
@@ -131,81 +118,103 @@ describe('EditComponent (container, resolver)', () => {
   });
 
   it('renders error state when resolver returns null', () => {
+    // Arrange send a duff resolved post
     setResolvedPost(null);
 
+    // Create the edit component
     fixture = TestBed.createComponent(EditComponent);
     component = fixture.componentInstance;
 
+    // Act run lifescyle hook
     fixture.detectChanges();
 
+    // Assert expect an error
     expect(component.hasError()).toBeTrue();
 
-    // stub should NOT render
+    // Assert stub should NOT render
     const stubDe = fixture.debugElement.query(By.directive(PostFormStubComponent));
     expect(stubDe).toBeNull();
   });
 
   it('sets form serverError for 400/422 on update', () => {
+    // Arrange send a resolved post
     setResolvedPost({ id: 1, title: 'A', body: 'B' } as Post);
 
+    // Send a 422 from the faked postService
     postServiceSpy.update.and.returnValue(
       throwError(() => new HttpErrorResponse({ status: 422 }))
     );
 
+    // Create the edit component
     fixture = TestBed.createComponent(EditComponent);
     component = fixture.componentInstance;
 
+    // Act run lifecycle hook
     fixture.detectChanges();
 
+    // Set form properties and mark as dirty (changed)
     component.form.get('title')?.setValue('New');
     component.form.get('body')?.setValue('NewBody');
     component.form.markAsDirty();
 
     component.submit();
 
+    // Expect it to error
     expect(component.form.errors?.['serverError']).toBeTrue();
   });
 
   it('navigates back when form clean', () => {
+    // Arrange send a resolved post
     setResolvedPost({ id: 1, title: 'A', body: 'B'} as Post);
 
     fixture = TestBed.createComponent(EditComponent);
     component = fixture.componentInstance;
+
+    // Act run lifecycle hook
     fixture.detectChanges();
 
+    // Click go back
     component.goBack();
 
+    // Asser that the post index called
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
   });
 
  it('retry() reloads the current route', () => {
-  // Need to simulate the hasError = true without this my test fails
+    // Arrange need to simulate the hasError = true without this my test fails
     setResolvedPost(null); // error state not strictly required for calling method
 
     fixture = TestBed.createComponent(EditComponent);
     component = fixture.componentInstance;
 
+    // Act run lifecycle hook
     fixture.detectChanges();
 
+    // Click on retry
     component.retry();
 
+    // Assert expect the navigate to edit post page
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/edit'); // routerSpy.url
   });
 
   it('clicking Retry button calls retry()', () => {
-    // Need to simulate the hasError = true without this my test fails
+    // Arrange need to simulate the hasError = true without this my test fails
     setResolvedPost(null); // ✅ makes hasError true -> renders Retry button
 
     fixture = TestBed.createComponent(EditComponent);
     component = fixture.componentInstance;
 
+    // Act run lifecycle hook
     fixture.detectChanges();
 
+    // Assert look for the retry button and expect the form to not be null
     const retryBtnDe = fixture.debugElement.query(By.css('button.btn.btn-outline-danger'));
     expect(retryBtnDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
 
+    // Click retry button
     retryBtnDe.nativeElement.click();
 
+    // Assert expect the post edit route to have been called
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/edit');
   });
 

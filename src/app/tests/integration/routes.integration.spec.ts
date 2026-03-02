@@ -18,6 +18,9 @@ describe('Routes integration', () => {
   beforeEach(async () => {
     postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['getAll', 'find']);
     storageSpy = jasmine.createSpyObj<TokenStorageService>('TokenStorageService', ['getToken', 'getRole']);
+    postServiceSpy.getAll.and.returnValue(of([]));
+    postServiceSpy.find.and.returnValue(of({ id: 1, title: 'X', body: 'Y' } as any));
+    storageSpy.getRole.and.returnValue('user'); // default non-admin
 
     await TestBed.configureTestingModule({
       providers: [
@@ -34,20 +37,22 @@ describe('Routes integration', () => {
     }).compileComponents();
   });
 
-    it('if not logged in navigation succeeds and shows login page (guestGuard) ', async () => {
-        // Arrange
-        storageSpy.getToken.and.returnValue(null); // guestGuard allows login
+  /* Guest Guard Coverage */
+    it('it is logged out and can view login page ', async () => {
+      // Arrange
+      storageSpy.getToken.and.returnValue(null); // guestGuard allows login
 
 
       // Act open the login web page
       const harness = await RouterTestingHarness.create();
-      const component = await harness.navigateByUrl('/auth/login');
+      await harness.navigateByUrl('/auth/login');
 
       // Now assert based on rendered DOM (integration style)
       expect(harness.routeNativeElement?.textContent).toContain('Login');
+      console.log(TestBed.inject(Router).url);
     });
 
-    it('redirects to login when opening "/" while logged out (guestGuard)', async () => {
+    it('it is logged out and going to "/" shows login page', async () => {
           storageSpy.getToken.and.returnValue(null);
 
           const harness = await RouterTestingHarness.create();
@@ -57,13 +62,13 @@ describe('Routes integration', () => {
 
     });
 
-    it('authenticated: /auth/login redirects to /post/index (guestGuard)', async () => {
+    it('it is logged in and going to "/" redirects away to index', async () => {
           // guestGuard should block auth routes when logged in
           // Arrange
           storageSpy.getToken.and.returnValue('token');
 
-          // Index route resolved will run, so make it succeed
-          postServiceSpy.getAll.and.returnValue(of([]));
+          // postservice spy is injected in before each
+          //postServiceSpy.getAll.and.returnValue(of([]));
 
           // Act
           const harness = await RouterTestingHarness.create();
@@ -73,29 +78,10 @@ describe('Routes integration', () => {
           expect(harness.routeNativeElement?.textContent).toContain('Angular 17 CRUD Application');
       });
 
-    it('redirects to login when user tries to access protected route without token (guestGuard)', async () => {
-            storageSpy.getToken.and.returnValue(null);
 
-            const harness = await RouterTestingHarness.create();
-            await harness.navigateByUrl('/post/index');
+/* Auth Guard Coverage */
 
-            expect(harness.routeNativeElement?.textContent).toContain('Login');
-    });
-
-    it('redirects logged-in user away from login page (guestGuard)', async() =>{
-      storageSpy.getToken.and.returnValue('token');
-
-      // Index route resolved will run, so make it succeed
-      postServiceSpy.getAll.and.returnValue(of([]));
-
-      const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/auth/login');
-
-      expect(harness.routeNativeElement?.textContent)
-        .toContain('Angular 17 CRUD Application');
-    });
-
-    it('navigating to /post/index runs resolver and shows Index page (authGuard)', async () => {
+    it('it is logged in and going to "/" runs resolver and loads posts', async () => {
       storageSpy.getToken.and.returnValue('token'); // authGuard passes
       postServiceSpy.getAll.and.returnValue(of([{ id: 1, title: 'A', body: 'B' } as any]));
 
@@ -108,28 +94,13 @@ describe('Routes integration', () => {
     });
 
 
-
-    it('if logged in navigation redirects to /post/index page (authGuard)', async () => {
-      // Arrange
-      storageSpy.getToken.and.returnValue('token');
-      postServiceSpy.getAll.and.returnValue(of([{ id: 1, title: 'A', body: 'B' } as any]));
-
-      // Act open the login web page
-      const harness = await RouterTestingHarness.create();
-      const component = await harness.navigateByUrl('/auth/login');
-
-      expect(harness.routeNativeElement?.textContent).toContain('Angular 17 CRUD Application');
-
-    });
-
-    it('navigating to /post/index shows error UI when resolver returns non-array, (null) (authGuard)', async () => {
+    it('it is logged in and going to "/" the service fails, resolver returns null and error UI', async () => {
         // Authguard passes
         storageSpy.getToken.and.returnValue('token');
 
         /*
-        Simulate resolver delivering bad data easiest way: make getAll() throw, then your resolver catchError
-        returns [] BUT your index component treats non-array as error.
-        So we simulate route data via actual resolver path by forcing getAll to error
+          Simulate HTTP failure: service throws -> resolver catchError returns null
+          -> Index shows error UI
         */
         postServiceSpy.getAll.and.returnValue(
             throwError(() => new Error('boom')) as any
@@ -138,14 +109,14 @@ describe('Routes integration', () => {
         const harness = await RouterTestingHarness.create();
         await harness.navigateByUrl('/post/index');
 
-        // expect the page to show the error state
+
         expect(harness.routeNativeElement?.textContent)
-          .toContain("We couldn't load the posts...");
+         .toContain("We couldn't load the posts..."); // or whatever your empty state is
     });
 
-    it('redirects "" to /post/index (authGuard)', async () => {
+    it('it is logged in and going to "/" redirects to post/index', async () => {
       storageSpy.getToken.and.returnValue('token');
-      postServiceSpy.getAll.and.returnValue(of([]));
+      //postServiceSpy.getAll.and.returnValue(of([]));
 
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl('/');
@@ -155,7 +126,7 @@ describe('Routes integration', () => {
     });
 
 
-    it('when token is null navigate to /post/index should redirect and add returnUrl (authGuard)', async () => {
+    it('it is logged out and going to "/" redirects to login and includes return URL', async () => {
       storageSpy.getToken.and.returnValue(null);
 
       const harness = await RouterTestingHarness.create();
@@ -168,55 +139,12 @@ describe('Routes integration', () => {
       expect(router.url).toContain('returnUrl=%2Fpost%2Findex');
     });
 
-    it('unauthenticated: /post/index redirects to /auth/login with returnUrl (authGuard)', async () => {
-      // authGuard should fail ARRANGE
-      storageSpy.getToken.and.returnValue(null);
-
-      // ACT
-      const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/post/index');
-
-      // DOM Assertion (best integration signal)
-      expect(harness.routeNativeElement?.textContent).toContain('Login');
-
-      // Optional
-      const router = TestBed.inject(Router);
-      expect(router.url).toContain('/auth/login');
-      expect(router.url).toContain('returnUrl=%2Fpost%2Findex');
-
-    });
 
 
-    // Error UI and Resolver tests
-    it('loads posts page when resolver returns valid data', async () => {
-      storageSpy.getToken.and.returnValue('token');
 
-      postServiceSpy.getAll.and.returnValue(
-        of([{ id: 1, title: 'A', body: 'B' } as any])
-        );
+    /* Role Guard Coverage */
 
-      const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/post/index');
-
-      expect(harness.routeNativeElement?.textContent)
-      .toContain('Angular 17 CRUD Application');
-    });
-
-
-    it('shows error UI when resolver returns invalid data', async () => {
-      storageSpy.getToken.and.returnValue('token');
-
-      postServiceSpy.getAll.and.returnValue(of(null as any));
-
-      const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/post/index');
-
-      expect(harness.routeNativeElement?.textContent)
-        .toContain("We couldn't load the posts");
-    });
-
-    // Role tests
-    it('authenticated but not admin: /admin redirects to /forbidden with from=/admin', async() => {
+    it('it is logged in as user going to /admin redirects to forbidden with from=/admin', async() => {
       // Arrange
       // auth passes
       storageSpy.getToken.and.returnValue('token');
@@ -238,16 +166,16 @@ describe('Routes integration', () => {
 
     });
 
-    it('redirects non-admin users from admin page', async () => {
-      storageSpy.getToken.and.returnValue('token');
-      storageSpy.getRole.and.returnValue('user');
+    it('it is logged in as admin and going to "/admin" loads admin dashboard', async () => {
+       storageSpy.getToken.and.returnValue('token'); // auth passes
+       storageSpy.getRole.and.returnValue('admin');  // role passes
 
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl('/admin');
 
-      expect(harness.routeNativeElement?.textContent)
-        .toContain('403');
-
+      // assert something unique on the admin dashboard
+      expect(harness.routeNativeElement?.textContent).toContain('Admin Dashboard');
+      // ^ replace with a real heading/text from your admin page
     });
 
     it('deep linking to /post/1/view loads the post', async () => {

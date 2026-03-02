@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
-
 import { IndexComponent } from './index.component';
 import { Post } from '../../models/post';
 import { PostService } from '../../services/post.service';
@@ -43,6 +42,7 @@ describe('IndexComponent (resolver template states)', () => {
       imports: [IndexComponent],
       providers: [
         provideRouter([]), // ✅ real Router so RouterLink works
+        // All of the items below are mocks
         { provide: ActivatedRoute, useValue: { data: routeData$.asObservable() } },
         { provide: PostService, useValue: postServiceSpy },
         { provide: GlobalLoadingService, useValue: { isLoading: () => false } },
@@ -66,10 +66,13 @@ describe('IndexComponent (resolver template states)', () => {
     fixture.detectChanges(); // ngOnInit subscribes to route.data
   });
 
-  it('clicking retry calls retry() and can recover when new route data arrives', async () => {
-    // 1) error emission
+  it('create a load post error situation and click retry and can recover when new route data arrives', async () => {
+    // 1) Arrange add error emission
     routeData$.next({ postList: null });
+
+    // Act run lifecycle hook ngOnInit
     fixture.detectChanges();
+    // Asset that the error will contain we couldnt load posts
     expect(fixture.nativeElement.textContent).toContain("We couldn't load the posts...");
 
     // 2) click retry
@@ -77,81 +80,105 @@ describe('IndexComponent (resolver template states)', () => {
     expect(btn).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
     btn.nativeElement.click();
 
+    // Wait
     await fixture.whenStable();
-
+    // Assert that the index listing page has been called
     expect(router.navigateByUrl).toHaveBeenCalledWith('/post/index');
 
     // 3) recovery emission
     routeData$.next({
       postList: [{ id: 1, title: 'Recovered', body: 'OK' } as Post]
     });
+    // Act
     fixture.detectChanges();
+    // Wait
     await fixture.whenStable();
 
+    // Assert that the stub isnt null
     const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
     expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
 
+    // Check to see if the text contains posts
     const stub = stubDe!.componentInstance as PostListTableStubComponent;
     expect(stub.posts.length).toBe(1);
     expect(fixture.nativeElement.textContent).not.toContain("We couldn't load the posts...");
   });
 
   it('renders the table when resolver returns posts (success state)', async () => {
+    // Arrange posts mock
     const mockPosts: Post[] = [
       { id: 1, title: 'Hello', body: 'World' } as Post,
       { id: 2, title: 'Hi', body: 'There' } as Post,
     ];
 
     routeData$.next({ postList: mockPosts });
+    // Act run lifecycle hook
     fixture.detectChanges();
+    // Wait
     await fixture.whenStable();
 
+    // Assert check the stub to see if it contains data
     const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
     expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
 
+    // Check the stub to see if it contains 2 stubs and it does NOT contain error message
     const stub = stubDe!.componentInstance as PostListTableStubComponent;
     expect(stub.posts.length).toBe(2);
     expect(fixture.nativeElement.textContent).not.toContain("We couldn't load the posts...");
   });
 
   it('renders error state when resolver returns null', async () => {
+    // Arrange inject a null post listing
     routeData$.next({ postList: null });
+    // Act run lifecycle hook
     fixture.detectChanges();
+    // Wait
     await fixture.whenStable();
 
+    // Assert that the text does NOT contain we couldn't load posts
     expect(fixture.nativeElement.textContent).toContain("We couldn't load the posts...");
 
+    // Check the stub to see it it is NOT null
     const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
     expect(stubDe).toBeNull();
   });
 
   it('deletePost calls service and updates the list & toasts success', async () => {
+    // Arrange add 2 posts in to the route
     routeData$.next({
       postList: [
         { id: 1, title: 'A', body: 'B' } as Post,
         { id: 2, title: 'C', body: 'D' } as Post,
       ]
     });
+    // Act run lifecycle hook
     fixture.detectChanges();
 
+    // Run the delete method
     postServiceSpy.delete.and.returnValue(of(void 0));
-
+    // Delete 1 post
     component.deletePost(1);
+    // Act run lifecycle hook
     fixture.detectChanges();
+    // Wait
     await fixture.whenStable();
-
+    // Assert that the delete method has been called
     expect(postServiceSpy.delete).toHaveBeenCalledWith(1);
 
+    // Check the stub to see if it is there
     const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
     expect(stubDe).not.toBeNull();
 
+    // Check to see if the post has been removed
     const stub = stubDe!.componentInstance as PostListTableStubComponent;
     expect(stub.posts.length).toBe(1);
 
+    // Check that the toast was called with the message
     expect(toastSpy.showSuccess).toHaveBeenCalledWith('Post deleted');
   });
 
   it('logout calls auth.logout and navigates to /auth/login', async () => {
+
     component.logout();
     await fixture.whenStable();
 
