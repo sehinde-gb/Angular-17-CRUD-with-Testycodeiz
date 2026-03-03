@@ -27,9 +27,7 @@ describe('PostFormComponent', () => {
     fixture.detectChanges();
   });
 
-  function getFormEl(): HTMLFormElement {
-    return fixture.debugElement.query(By.css('form')).nativeElement as HTMLFormElement;
-  }
+
 
   function getSubmitBtn(): HTMLButtonElement {
     return fixture.debugElement.query(By.css('button[type="submit"]')).nativeElement as HTMLButtonElement;
@@ -53,7 +51,7 @@ describe('PostFormComponent', () => {
     fixture.detectChanges();
 
     const btn = getSubmitBtn();
-    expect(btn.textContent).toContain('Saving...');
+    expect(getSubmitBtn().textContent?.trim()).toBe('Saving...');
   });
 
   it('sets inputs to readOnly when isSubmitting=true', () => {
@@ -73,8 +71,8 @@ describe('PostFormComponent', () => {
     fixture.detectChanges();
 
     // Trigger ngSubmit (don’t click the button; submit the form)
-    getFormEl().dispatchEvent(new Event('submit'));
-    fixture.detectChanges();
+    fixture.debugElement.query(By.css('form')).triggerEventHandler('ngSubmit', {});
+
 
     expect(component.submitForm.emit).toHaveBeenCalledTimes(1);
   });
@@ -123,8 +121,9 @@ describe('PostFormComponent', () => {
   });
 
   it('shows "Title is required" when title is touched and invalid', () => {
-    component.form.controls['title'].markAsTouched();
     component.form.controls['title'].setValue(''); // required error
+    component.form.controls['title'].markAsTouched();
+
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Title is required');
