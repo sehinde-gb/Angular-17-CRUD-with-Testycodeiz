@@ -130,20 +130,22 @@ describe('PostService', () => {
   it('it should delete a post (DELETE)', () => {
     // ARRANGE
     const postId = 1;
-    
+
     // ACT
-    service.delete(postId).subscribe((res) =>{
-      expect(res).toBeTruthy();
+    service.delete(postId).subscribe((res) => {
+      // Here I am being explicit however you can remove this typing from this method and it will still be OK
+      expect(res).toBeNull();
     });
 
-    //EXPECT
-    const req = httpMock.expectOne(`${environment.apiUrl}/posts/1`);
+    //EXPECT pause the test and give me the Http request that was made
+    const req = httpMock.expectOne(`${environment.apiUrl}/posts/${postId}`);
+    // Expect the method to be delete
     expect(req.request.method).toBe('DELETE');
-    
 
 
-    // FLUSH
-    req.flush({});
+
+    // FLUSH server response "NO BODY" passes back to subscriber as undefined
+    req.flush(null); // or req.flush(void 0)
 
   });
 });
