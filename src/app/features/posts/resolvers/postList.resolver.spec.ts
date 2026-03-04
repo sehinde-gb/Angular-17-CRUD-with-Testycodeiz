@@ -1,31 +1,33 @@
 import { TestBed } from '@angular/core/testing';
-import { ResolveFn, Router } from '@angular/router';
-
 import { postListResolver } from './postList.resolver';
 import { PostService } from '../services/post.service';
 import { Post } from '../models/post';
-import { firstValueFrom, isObservable, Observable, of } from 'rxjs';
-import { resourceLimits } from 'node:worker_threads';
+import { first, firstValueFrom, isObservable, Observable, of, throwError } from 'rxjs';
+
 
 describe('postListResolver', () => {
   let postServiceSpy: jasmine.SpyObj<PostService>;
-  let routerSpy: jasmine.SpyObj<Router>;
 
-  
   beforeEach(() => {
     postServiceSpy = jasmine.createSpyObj('PostService', ['getAll']);
-    routerSpy = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
-
 
     TestBed.configureTestingModule({
       providers: [
         { provide: PostService, useValue: postServiceSpy },
-        { provide: Router, useValue: routerSpy},
       ],
     });
   });
-    
-  it('should resolve all posts from the PostService', async() => {
+
+
+
+  function asObservable<T>(x: any): Observable<T> {
+    if (!isObservable(x)) {
+      throw new Error('Expected resolver to return an Observable');
+    }
+    return x as Observable<T>;
+  }
+
+  it('returns posts when PostService.getAll succeeds', async() => {
     // Arrange
     const mockPosts: Post[] = [
       { id: 1, title: 'First Post', body: 'First Body'} as Post,
@@ -37,16 +39,42 @@ describe('postListResolver', () => {
 
     // Execute the resolver
    const result$ = TestBed.runInInjectionContext(() =>
+    // HERE
       postListResolver({} as any, {} as any)
-      ) as unknown as import('rxjs').Observable<Post[]>;
+    );
 
+    // ResolveFn expects Post[] | Observable<Post[] | null> | Promise<Post[] | null>
+    // We expect an observable so narrow the ResolveFn union safely
+    expect(isObservable(result$)).toBeTrue
+    /* Cast the result (casting uses the word as) as Post or Null
+     previously it wasn't defined and it caused typing errors */
+    const value = await firstValueFrom(asObservable<Post[] | null>(result$));
 
-
-    const value = await firstValueFrom(result$);
-    expect(value).toEqual(mockPosts);
-    expect(value.length).toBe(2);
+    // Assert
     expect(postServiceSpy.getAll).toHaveBeenCalledTimes(1);
-    
+    expect(value).toEqual(mockPosts);
+
     });
+
+    it('returns null when PostService.getAll errors', async () => {
+
+      // Arrange
+      postServiceSpy.getAll.and.returnValue(throwError(() => new Error('boom')));
+
+      // Act
+      const result = TestBed.runInInjectionContext(() =>
+        postListResolver({} as any, {} as any)
+      );
+
+      // Narrow
+      expect(isObservable(result)).toBeTrue();
+      const value = await firstValueFrom(asObservable<Post | null>(result));
+
+      // Assert
+      expect(postServiceSpy.getAll).toHaveBeenCalledTimes(1);
+      expect(value).toBeNull();
+
+    });
+
 
   });

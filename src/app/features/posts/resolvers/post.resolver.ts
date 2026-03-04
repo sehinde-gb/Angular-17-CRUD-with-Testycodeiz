@@ -5,9 +5,11 @@ import { PostService } from '../services/post.service';
 import { Post } from '../models/post';
 
 export const postResolver: ResolveFn<Post | null> = (route: ActivatedRouteSnapshot) => {
+  /*
+  Decision points: Invalid Id, Valid id + service success & Valid id + service error
+  */
   const postService = inject(PostService);
   const router = inject(Router);
-
   const id = Number(route.paramMap.get('postId'));
 
   // If id is invalid, return null (so UI can show "no post found" / error state)
@@ -15,14 +17,14 @@ export const postResolver: ResolveFn<Post | null> = (route: ActivatedRouteSnapsh
     router.navigateByUrl('/post/index');
     return of(null);
   }
-  
+
   return postService.find(id).pipe(
     // IMPORTANT: swallow the error so navigation still completes
     // (otherwise Angular cancels navigation and your component never loads)
     catchError(() => {
       // interceptor already toasts
       return of(null);
-    })  
+    })
   );
-  
+
 };

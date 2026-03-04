@@ -28,7 +28,6 @@ describe('PostFormComponent', () => {
   });
 
 
-
   function getSubmitBtn(): HTMLButtonElement {
     return fixture.debugElement.query(By.css('button[type="submit"]')).nativeElement as HTMLButtonElement;
   }
