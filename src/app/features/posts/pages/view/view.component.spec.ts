@@ -148,4 +148,36 @@ describe('ViewComponent (resolver + template states)', () => {
     // ASSERT: parent navigation
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/post/index']);
   });
+
+  it('shows loading UI when loading=true and resolver returns null', () => {
+      // Arrange
+      TestBed.overrideProvider(GlobalLoadingService, { useValue: { isLoading: () => true } });
+      setupWithResolvedPost(null);
+
+      fixture = TestBed.createComponent(ViewComponent);
+      fixture.detectChanges();
+
+      // Assert
+      expect(fixture.nativeElement.textContent).toContain('Loading post...');
+      expect(fixture.debugElement.query(By.directive(PostDetailsCardStubComponent))).toBeNull();
+  });
+
+  it('clicking Retry navigates to the same url', async () => {
+    // Arrange
+    setupWithResolvedPost(null);
+    routerSpy.navigateByUrl.and.resolveTo(true);
+
+    fixture = TestBed.createComponent(ViewComponent);
+    fixture.detectChanges(); // shows error UI with Retry button
+
+    // Act
+    const retryBtn = fixture.debugElement.query(By.css('button.btn.btn-outline-danger'));
+    expect(retryBtn).not.toBeNull();
+    retryBtn.nativeElement.click();
+
+    await fixture.whenStable();
+
+    // Assert
+    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/view');
+  });
 });

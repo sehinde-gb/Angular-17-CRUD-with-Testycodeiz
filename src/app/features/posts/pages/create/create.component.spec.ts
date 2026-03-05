@@ -19,10 +19,12 @@ describe('CreateComponent (container)', () => {
 
   let postServiceSpy: jasmine.SpyObj<PostService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let toastSpy: jasmine.SpyObj<ToastService>;
 
   beforeEach(async () => {
     postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['create']);
     routerSpy = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
+    toastSpy = jasmine.createSpyObj('ToastService', ['showSuccess', 'showError']);
 
     await TestBed.configureTestingModule({
       // ⚠️ Only import the container
@@ -32,7 +34,7 @@ describe('CreateComponent (container)', () => {
         // These are the mocks
         { provide: PostService, useValue: postServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: ToastService, useValue: { showSuccess: () => {}, showError: () => {} } },
+        { provide: ToastService, useValue: toastSpy},
         { provide: GlobalLoadingService, useValue: { isLoading: () => false } },
       ]
     })
@@ -45,6 +47,10 @@ describe('CreateComponent (container)', () => {
 
     fixture = TestBed.createComponent(CreateComponent);
     component = fixture.componentInstance;
+  }),
+    afterEach(() => {
+    toastSpy.showSuccess.calls.reset();
+    toastSpy.showError.calls.reset();
   });
 
   it('renders the post-form stub and passes expected inputs', () => {
@@ -56,9 +62,13 @@ describe('CreateComponent (container)', () => {
 
     // Assert that the input create post has been passed to the stub
     const stub = stubDe!.componentInstance as PostFormStubComponent;
-    expect(stub.submitLabel).toBe("'Create Post'");
+
+    expect(stub.submitLabel).toBe('Create Post');
+
     expect(stub.requireDirty).toBeFalse();
     expect(stub.form).toBeTruthy();
+
+    expect(toastSpy.showSuccess).not.toHaveBeenCalled();
   });
 
   it('calls PostService.create(dto) when stub emits submitForm (success path)', () => {
@@ -76,9 +86,13 @@ describe('CreateComponent (container)', () => {
     const stubDe = fixture.debugElement.query(By.directive(PostFormStubComponent));
     const stub = stubDe!.componentInstance as PostFormStubComponent;
     stub.submitForm.emit();
-    // Assert that the payload hase been passed to the post service
+
+    fixture.detectChanges();
+    // Assert that the payload has been passed to the post service
     const expectedPayload: CreatePostDto = { title: 'T', body: 'B' };
     expect(postServiceSpy.create).toHaveBeenCalledWith(expectedPayload);
+    expect(toastSpy.showSuccess).toHaveBeenCalledWith('Post created successfully');
+    expect(toastSpy.showError).not.toHaveBeenCalled();
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
   });
 
@@ -101,5 +115,7 @@ describe('CreateComponent (container)', () => {
     // Assert that the server returns validation failure message
     expect(component.serverErrorMessage()).toContain('Validation failed');
     expect(component.form.errors?.['serverError']).toBeTrue();
+    expect(toastSpy.showSuccess).not.toHaveBeenCalled();
+
   });
 });

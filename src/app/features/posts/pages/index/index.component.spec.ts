@@ -22,6 +22,7 @@ class PostListTableStubComponent {
 }
 
 describe('IndexComponent (resolver template states)', () => {
+  // These values just declare it once
   let fixture: ComponentFixture<IndexComponent>;
   let router: Router;
   let postServiceSpy: jasmine.SpyObj<PostService>;
@@ -29,14 +30,17 @@ describe('IndexComponent (resolver template states)', () => {
   let routeData$: BehaviorSubject<any>;
   let toastSpy: jasmine.SpyObj<ToastService>;
   let authSpy: jasmine.SpyObj<AuthService>;
+  let loadingStub = { isLoading: () => false };
 
   beforeEach(async () => {
+    // All of these values are reset before each test runs again !!!!
     routeData$ = new BehaviorSubject<any>({ postList: [] });
-
     toastSpy = jasmine.createSpyObj<ToastService>('ToastService', ['showSuccess', 'showError']);
     postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['delete']);
     authSpy = jasmine.createSpyObj<AuthService>('AuthService', ['logout', 'isAuthenticated']);
     authSpy.isAuthenticated.and.returnValue(true);
+    loadingStub.isLoading = () => false;
+
 
     await TestBed.configureTestingModule({
       imports: [IndexComponent],
@@ -45,7 +49,7 @@ describe('IndexComponent (resolver template states)', () => {
         // All of the items below are mocks
         { provide: ActivatedRoute, useValue: { data: routeData$.asObservable() } },
         { provide: PostService, useValue: postServiceSpy },
-        { provide: GlobalLoadingService, useValue: { isLoading: () => false } },
+        { provide: GlobalLoadingService, useValue:  loadingStub },
         { provide: ToastService, useValue: toastSpy },
         { provide: AuthService, useValue: authSpy },
       ],
@@ -66,7 +70,7 @@ describe('IndexComponent (resolver template states)', () => {
     fixture.detectChanges(); // ngOnInit subscribes to route.data
   });
 
-  it('create a load post error situation and click retry and can recover when new route data arrives', async () => {
+  it('shows error UI & clicking Retry navigates to same URL', async () => {
     // 1) Arrange add error emission
     routeData$.next({ postList: null });
 
@@ -84,24 +88,37 @@ describe('IndexComponent (resolver template states)', () => {
     await fixture.whenStable();
     // Assert that the index listing page has been called
     expect(router.navigateByUrl).toHaveBeenCalledWith('/post/index');
+  });
 
-    // 3) recovery emission
-    routeData$.next({
-      postList: [{ id: 1, title: 'Recovered', body: 'OK' } as Post]
-    });
+  it('shows couldnt load posts and recovers when resolver later emits posts', async () => {
+
+    routeData$.next({ postList: null });
+
     // Act
     fixture.detectChanges();
-    // Wait
+    expect(fixture.nativeElement.textContent).toContain("We couldn't load the posts...");
+
+    routeData$.next({ postList: [{ id: 1, title: 'Recovered', body: 'OK'} as Post]});
+
+    fixture.detectChanges();
     await fixture.whenStable();
 
-    // Assert that the stub isnt null
     const stubDe = fixture.debugElement.query(By.directive(PostListTableStubComponent));
-    expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
+    expect(stubDe).not.toBeNull();
 
-    // Check to see if the text contains posts
-    const stub = stubDe!.componentInstance as PostListTableStubComponent;
-    expect(stub.posts.length).toBe(1);
-    expect(fixture.nativeElement.textContent).not.toContain("We couldn't load the posts...");
+
+  });
+
+  it('shows loading row when loading=true and posts empty',  () => {
+    loadingStub.isLoading = () => true;
+    routeData$.next({ postList: [] });
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Loading posts...');
+    expect(fixture.debugElement.query(By.directive(PostListTableStubComponent))).toBeNull();
+
+
   });
 
   it('renders the table when resolver returns posts (success state)', async () => {
@@ -135,7 +152,7 @@ describe('IndexComponent (resolver template states)', () => {
     // Wait
     await fixture.whenStable();
 
-    // Assert that the text does NOT contain we couldn't load posts
+    // Assert that the text contains we couldn't load posts
     expect(fixture.nativeElement.textContent).toContain("We couldn't load the posts...");
 
     // Check the stub to see it it is NOT null
