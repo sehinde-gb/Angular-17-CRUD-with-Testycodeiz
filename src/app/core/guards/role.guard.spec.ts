@@ -4,6 +4,13 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 import { roleGuard } from './role.guard';
 import { TokenStorageService } from 'src/app/features/auth/services/token-storage.service';
 
+
+/*
+  Key contract
+  if role !== admin -> redirect to /forbidden?from=<state.url>
+  if role === admin -> allow true
+*/
+
 describe('roleGuard', () => {
   let storage: jasmine.SpyObj<TokenStorageService>;
   let router: jasmine.SpyObj<Router>;
@@ -28,7 +35,7 @@ describe('roleGuard', () => {
     });
   });
 
-  it('returns true when no roles are required (route.data.roles missing or empty)', () => {
+  it('it returns true when roles missing (route.data.roles missing or empty)', () => {
     // User action opens the admin page
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(makeRoute(undefined), makeState('/admin'))
@@ -54,45 +61,12 @@ describe('roleGuard', () => {
     expect(router.createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('uses UrlTree to /forbidden with from=state.url when user lacks role', () => {
-    // Get the role from the stored token (not allowed)
-    storage.getRole.and.returnValue('user');
-
-    // Fake the URL redirect
-    const fakeTree = {} as UrlTree;
-    router.createUrlTree.and.returnValue(fakeTree);
-
-    const stateUrl = '/admin?tab=users';
-
-    // User Action opens admin with route config admin
-    const result = TestBed.runInInjectionContext(() =>
-      roleGuard(makeRoute(['admin']), makeState(stateUrl))
-    );
-
-    // Ensure we are redirected
-    expect(router.createUrlTree).toHaveBeenCalledTimes(1);
-
-    // Inspect the user action
-    const args = router.createUrlTree.calls.mostRecent().args;
-    // Interrogate the URL and pluck out '/forbidden'
-    const commands = args[0];
-    // Interrogate the URL and pluck out '/admin?tab=users'
-    const extras = args[1];
-
-    // Verify that commands (args[0]) /forbidden has been plucked out
-    expect(commands).toEqual(['/forbidden']);
-    // verify that extras (args[1] stateUrl has been plucked out
-    expect(extras).toEqual({ queryParams: { from: stateUrl}});
-    expect(result).toBe(fakeTree);
-
-    // Why do we use args[0] and args[1] createUrlTree is called with 2 parameters- the navigation commands and the
-    // extras object and Jasmine stores them as an array
-  });
 
 
 
 
-  it('uses state.url in queryParams from when role is missing (redirect)', () => {
+
+  it('redirects to /forbidden with from=state.url when user lacks required role', () => {
       // Arrange
       const route = makeRoute(['admin']);
       const state = makeState('/admin?tab=users');
@@ -100,6 +74,7 @@ describe('roleGuard', () => {
       // user has no role not allowed
       storage.getRole.and.returnValue(null);
 
+      // redirect injected
       const fakeTree = {} as UrlTree;
       router.createUrlTree.and.returnValue(fakeTree);
 
@@ -108,16 +83,13 @@ describe('roleGuard', () => {
         roleGuard(route, state)
       );
 
-
       // Assert
       expect(router.createUrlTree).toHaveBeenCalledTimes(1);
-
-      const args = router.createUrlTree.calls.mostRecent().args;
-      const commands = args[0];
-      const extras = args[1];
-
-      expect(commands).toEqual(['/forbidden']);
-      expect(extras).toEqual({ queryParams: { from: '/admin?tab=users' } });
+      expect(router.createUrlTree).toHaveBeenCalledWith(
+      ['/forbidden'],
+      { queryParams: { from: '/admin?tab=users' } }
+      );
+      expect(storage.getRole).toHaveBeenCalledTimes(1);
       expect(result).toBe(fakeTree);
     });
 });
