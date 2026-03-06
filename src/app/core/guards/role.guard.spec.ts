@@ -35,6 +35,11 @@ describe('roleGuard', () => {
     });
   });
 
+  /*
+    Edge case
+    Tests that verify prevention or unusual situations
+  */
+
   it('it returns true when roles missing (route.data.roles missing or empty)', () => {
     // User action opens the admin page
     const result = TestBed.runInInjectionContext(() =>
@@ -64,7 +69,10 @@ describe('roleGuard', () => {
 
 
 
-
+  /*
+    Error path
+    Tests that verify error handling behaviour
+  */
 
   it('redirects to /forbidden with from=state.url when user lacks required role', () => {
       // Arrange

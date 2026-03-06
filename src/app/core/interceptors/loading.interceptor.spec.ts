@@ -31,6 +31,10 @@ describe('loadingInterceptor', () => {
     httpMock.verify();
   });
 
+  /*
+    Success path
+    Test that verify normal user behaviour works
+  */
     it('keeps loading true until ALL concurrent requests finish', () => {
 
     // -------- ARRANGE --------

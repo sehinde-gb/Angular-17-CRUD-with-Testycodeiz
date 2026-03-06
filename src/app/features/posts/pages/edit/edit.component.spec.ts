@@ -1,4 +1,3 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,6 +15,7 @@ import { PostFormStubComponent } from 'src/app/tests/helpers/stubs/post-form.stu
 
 
 describe('EditComponent (container, resolver)', () => {
+  // Test variables
   let fixture: ComponentFixture<EditComponent>;
   let component: EditComponent;
   let postServiceSpy: jasmine.SpyObj<PostService>;
@@ -34,6 +34,7 @@ describe('EditComponent (container, resolver)', () => {
     activatedRouteStub.snapshot.data.post = post;
   }
 
+  // TestBed setup runs before each test
   beforeEach(async () => {
     postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['update']);
     routerSpy = jasmine.createSpyObj<Router>('Router', ['navigateByUrl', 'navigate'], {
@@ -61,7 +62,12 @@ describe('EditComponent (container, resolver)', () => {
       .compileComponents();
   });
 
-  it('renders post-form stub and passes expected inputs when resolver provides a post', () => {
+  /*
+    Render / Initial state
+    Tests that verify the component renders correctly
+    without user interaction
+  */
+ it('renders post-form stub and passes expected inputs when resolver provides a post', () => {
     // Arrange pass in a post sent by the resolver
     setResolvedPost({ id: 1, title: 'A', body: 'B' } as Post);
 
@@ -82,6 +88,11 @@ describe('EditComponent (container, resolver)', () => {
     expect(stub.requireDirty).toBeTrue();
     expect(stub.form).toBeTruthy();
   });
+
+  /*
+    Success paths
+    Tests that verify normal user behaviour works
+  */
 
   it('calls PostService.update(id, dto) when stub emits submitForm (success path)', () => {
      // Arrange pass in a post sent by the resolver
@@ -117,6 +128,27 @@ describe('EditComponent (container, resolver)', () => {
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
   });
 
+  it('navigates back when form clean', () => {
+    // Arrange send a resolved post
+    setResolvedPost({ id: 1, title: 'A', body: 'B'} as Post);
+
+    fixture = TestBed.createComponent(EditComponent);
+    component = fixture.componentInstance;
+
+    // Act run lifecycle hook
+    fixture.detectChanges();
+
+    // Click go back
+    component.goBack();
+
+    // Assert that the post index called
+    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
+  });
+
+  /*
+    Error paths
+    Tests that verify error handling behaviour
+  */
   it('renders error state when resolver returns null', () => {
     // Arrange send a duff resolved post
     setResolvedPost(null);
@@ -163,24 +195,7 @@ describe('EditComponent (container, resolver)', () => {
     expect(component.form.errors?.['serverError']).toBeTrue();
   });
 
-  it('navigates back when form clean', () => {
-    // Arrange send a resolved post
-    setResolvedPost({ id: 1, title: 'A', body: 'B'} as Post);
-
-    fixture = TestBed.createComponent(EditComponent);
-    component = fixture.componentInstance;
-
-    // Act run lifecycle hook
-    fixture.detectChanges();
-
-    // Click go back
-    component.goBack();
-
-    // Asser that the post index called
-    expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
-  });
-
- it('retry() reloads the current route', () => {
+  it('retry() reloads the current route', () => {
     // Arrange need to simulate the hasError = true without this my test fails
     setResolvedPost(null); // error state not strictly required for calling method
 
@@ -197,7 +212,7 @@ describe('EditComponent (container, resolver)', () => {
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/edit'); // routerSpy.url
   });
 
-  it('clicking Retry button calls retry()', () => {
+  it('clicking retry button calls retry()', () => {
     // Arrange need to simulate the hasError = true without this my test fails
     setResolvedPost(null); // ✅ makes hasError true -> renders Retry button
 
@@ -217,5 +232,9 @@ describe('EditComponent (container, resolver)', () => {
     // Assert expect the post edit route to have been called
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/edit');
   });
+
+
+
+
 
 });

@@ -37,6 +37,10 @@ describe('errorInterceptor', () => {
   error() => simulates network failure
   */
 
+  /*
+    Error path
+    Tests that verify error handling behaviour
+  */
   it('does NOT toast for 400/422 (passes through for local handling)', () => {
     // Arrange get request to api posts with empty error message
     http.get('/api/posts').subscribe({ error: () => {} });
@@ -59,33 +63,6 @@ describe('errorInterceptor', () => {
 
     expect(toastSpy.showError).toHaveBeenCalledWith('Server error. Please try again later.');
   });
-
-  it('GET retries twice on 500 with backoff (1s then 2s), then succeeds', fakeAsync(() => {
-    // Arrange set up get request and assign an empty result
-    let result: any;
-    http.get('/api/posts').subscribe((res) => (result = res));
-
-    // ACT request 1 -> 500 inject the mock and assign fake message 500 server error
-    const req1 = httpMock.expectOne('/api/posts');
-    // req.flush pretend the server responded with this
-    req1.flush({}, { status: 500, statusText: 'Server Error' });
-
-    // ACT retry #1 after 1000ms repeat inject mock and assign fake message 500 server error
-    tick(1000);
-    const req2 = httpMock.expectOne('/api/posts');
-    req2.flush({}, { status: 500, statusText: 'Server Error' });
-
-    // ACT retry #2 after 2000ms and and assign fake message for postId 1
-    tick(2000);
-    const req3 = httpMock.expectOne('/api/posts');
-    // req.flush pretend the server responded with this
-    req3.flush([{ id: 1 }]);
-
-    // Assert that the result is equal to the postId
-    expect(result).toEqual([{ id: 1 }]);
-    // No toast because we recovered successfully before catchError fired at the end
-    expect(toastSpy.showError).not.toHaveBeenCalled();
-  }));
 
   it('GET retries twice on network error status 0', fakeAsync(() => {
     // Arrange set up get request and assign an empty result
@@ -110,6 +87,7 @@ describe('errorInterceptor', () => {
       'Cannot connect to the server. Please check your connection.'
     );
   }));
+
   it('does NOT retry for POST even if 500', () => {
     http.post('/api/posts', { title: 'T' }).subscribe({ error: () => {} });
 
@@ -119,26 +97,6 @@ describe('errorInterceptor', () => {
     // if it retried, another request would exist:
     httpMock.expectNone('/api/posts');
   });
-
-
-  /* it('does NOT retry for POST even if 500', () => {
-    // Arrange set up get request and assign an empty result
-    http.post('/api/posts', { title: 'T' }).subscribe({ error: () => {} });
-
-    // Act assign the mock to the URL
-    const reqs1 = httpMock.match('/api/posts');
-    // Assert that the mock length is 1
-    expect(reqs1.length).toBe(1);
-
-    // ACT inject mock and assign fake message Server error 500
-    // req.flush pretend the server responded with this
-    reqs1[0].flush({}, { status: 500, statusText: 'Server Error'});
-
-    // Act If it retried, we'd see a second request appear
-    const reqs2 = httpMock.match('/api/posts');
-    // Assert that there is NOT a second request
-    expect(reqs2.length).toBe(0);
-  }); */
 
   it('does NOT retry for POST even if 422 (passes through, no toast', () => {
     // Arrange set up get request and assign an empty result
@@ -173,4 +131,44 @@ describe('errorInterceptor', () => {
     // Assert that toast displays not found message
     expect(toastSpy.showError).toHaveBeenCalledWith('Not found');
   });
+
+  
+  /*
+    Success path
+    Test that verify normal user behaviour works
+  */
+  it('GET retries twice on 500 with backoff (1s then 2s), then succeeds', fakeAsync(() => {
+    // Arrange set up get request and assign an empty result
+    let result: any;
+    http.get('/api/posts').subscribe((res) => (result = res));
+
+    // ACT request 1 -> 500 inject the mock and assign fake message 500 server error
+    const req1 = httpMock.expectOne('/api/posts');
+    // req.flush pretend the server responded with this
+    req1.flush({}, { status: 500, statusText: 'Server Error' });
+
+    // ACT retry #1 after 1000ms repeat inject mock and assign fake message 500 server error
+    tick(1000);
+    const req2 = httpMock.expectOne('/api/posts');
+    req2.flush({}, { status: 500, statusText: 'Server Error' });
+
+    // ACT retry #2 after 2000ms and and assign fake message for postId 1
+    tick(2000);
+    const req3 = httpMock.expectOne('/api/posts');
+    // req.flush pretend the server responded with this
+    req3.flush([{ id: 1 }]);
+
+    // Assert that the result is equal to the postId
+    expect(result).toEqual([{ id: 1 }]);
+    // No toast because we recovered successfully before catchError fired at the end
+    expect(toastSpy.showError).not.toHaveBeenCalled();
+  }));
+
+
+
+
+
+
+
+
 });

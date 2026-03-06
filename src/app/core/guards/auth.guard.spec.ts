@@ -23,7 +23,29 @@ describe('authGuard', () => {
     });
   });
 
+  /*
+    Success path
+    Test that verify normal user behaviour works
+  */
+  it('returns true when logged in', () => {
+      // Retrieves the token
+      storage.getToken.and.returnValue('token');
 
+      // Action opens the page at /post/index
+      const result = TestBed.runInInjectionContext(() =>
+        authGuard({} as any, { url: '/post/index'} as any)
+      );
+
+      expect(result).toBeTrue();
+
+      // The guard allows navigation and does not redirect (Urltree)
+      expect(router.createUrlTree).not.toHaveBeenCalled();
+    });
+
+  /*
+    Error path
+    Tests that verify error handling behaviour
+  */
 
   it('returns UrlTree to /auth/login with returnUrl when not authenticated', () => {
     storage.getToken.and.returnValue(null);
@@ -46,34 +68,14 @@ describe('authGuard', () => {
 
     expect(result).toBe(fakeTree);
 
-    /* // ✅ Read spy args safely (no destructuring from CallInfo)
-    const args = router.createUrlTree.calls.mostRecent().args;
-    // builds the redirect to '/auth/login'
-    const commands = args[0];
-    // include the original url called returnUrl this appears as /auth/login?returnUrl=/post/index
-    const extras = args[1];
 
-    expect(commands).toEqual(['/auth/login']);
-    // state.url becomes the returnUrl listed below
-    expect(extras).toEqual({ queryParams: { returnUrl: '/post/index' } });
-    // expects the fakeTree redirect to be invoked
-    expect(result).toBe(fakeTree); */
   });
 
-  it('returns true when logged in', () => {
-    // Retrieves the token
-    storage.getToken.and.returnValue('token');
+  /*
+    Edge case
+    Tests that verify prevention or unusual situations
+  */
 
-    // Action opens the page at /post/index
-    const result = TestBed.runInInjectionContext(() =>
-      authGuard({} as any, { url: '/post/index'} as any)
-    );
-
-    expect(result).toBeTrue();
-
-    // The guard allows navigation and does not redirect (Urltree)
-    expect(router.createUrlTree).not.toHaveBeenCalled();
-  });
 
   it('uses state.url as returnUrl (not hard coded)', () => {
     storage.getToken.and.returnValue(null);

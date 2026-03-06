@@ -11,13 +11,16 @@ import { Post } from '../models/post'; // <-- adjust path if needed
   service error -> returns null (and does not navigate)
 */
 
-describe('postResolver', () => {
-  let postServiceSpy: jasmine.SpyObj<PostService>;
-  let routerSpy: jasmine.SpyObj<Router>; // Added router
 
+describe('postResolver', () => {
+  // Test variables
+  let postServiceSpy: jasmine.SpyObj<PostService>;
+  let routerSpy: jasmine.SpyObj<Router>;
+
+  // TestBed setup runs before each test
   beforeEach(() => {
     postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['find']);
-    routerSpy = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']); // set up router
+    routerSpy = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
 
     // important: navigateByUrl returns Promise<boolean>
     routerSpy.navigateByUrl.and.resolveTo(true);
@@ -47,29 +50,45 @@ describe('postResolver', () => {
       } as any;
     }
 
-  it('navigates to /post/index and returns null when id is invalid', async () => {
-    // Arrange: invalid id
-    const route = createRoute('abc');
 
-    // set up the route to be an invalid route
-    const result = TestBed.runInInjectionContext(() => postResolver(route, {} as any));
 
-    expect(isObservable(result)).toBeTrue();
+  /*
+    Error paths
+    Tests that verify error handling behaviour
+  */
+  it('valid postId: resolves null when PostService.find errors (swallows error)', async () => {
+    // Arrange
+    const route = createRoute('1');
 
-   // Since the resolver will emit either the post or null we need to wait for it
-   // that is why we are using firstValueFrom.
-   const value = await firstValueFrom(asObservable<Post | null>(result));
+    // The find fails and it produces an error status of 500
+    postServiceSpy.find.and.returnValue(
+      throwError(() => new Error('boom'))
+    );
+    // Act
+    // Inject the resolver and Pretend the URL has an ID of 1
+    const result$ = TestBed.runInInjectionContext(() =>
+      postResolver(route, {} as any)
+    );
 
-   // Check for the navigation away to the index page
-   expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
+    // The postresolver will emit the value null
+    expect(isObservable(result$)).toBeTrue();
+    const value = await firstValueFrom(asObservable<Post | null>(result$));
 
-   // Check to see if the value is null.
-   expect(value).toBeNull();
+    // Check to see if it is null (it should be null as this was emitted)
+    expect(value).toBeNull();
 
-   // Check to see if the post service has NOT been called.
-   expect(postServiceSpy.find).not.toHaveBeenCalled();
+   /* Specifically, it confirms that the resolver took the string '1'
+   from the route (result$), converted it (if necessary), and passed it to the postService.find() method. */
+    expect(postServiceSpy.find).toHaveBeenCalledWith(1);
+    expect(routerSpy.navigateByUrl).not.toHaveBeenCalled();
+
 
   });
+
+  /*
+    Success paths
+    Tests that verify normal user behaviour works
+  */
 
   it('returns post when PostService.find succeeds', async () => {
 
@@ -101,34 +120,31 @@ describe('postResolver', () => {
 
   });
 
+/*
+  Edge cases
+  Tests that verify invalid or boundary route inputs
+*/
+   it('navigates to /post/index and returns null when id is invalid', async () => {
+    // Arrange: invalid id
+    const route = createRoute('abc');
 
+    // set up the route to be an invalid route
+    const result = TestBed.runInInjectionContext(() => postResolver(route, {} as any));
 
-  it('valid postId: resolves null when PostService.find errors (swallows error)', async () => {
-    // Arrange
-    const route = createRoute('1');
+    expect(isObservable(result)).toBeTrue();
 
-    // The find fails and it produces an error status of 500
-    postServiceSpy.find.and.returnValue(
-      throwError(() => new Error('boom'))
-    );
-    // Act
-    // Inject the resolver and Pretend the URL has an ID of 1
-    const result$ = TestBed.runInInjectionContext(() =>
-      postResolver(route, {} as any)
-    );
+   // Since the resolver will emit either the post or null we need to wait for it
+   // that is why we are using firstValueFrom.
+   const value = await firstValueFrom(asObservable<Post | null>(result));
 
-    // The postresolver will emit the value null
-    expect(isObservable(result$)).toBeTrue();
-    const value = await firstValueFrom(asObservable<Post | null>(result$));
+   // Check for the navigation away to the index page
+   expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
 
-    // Check to see if it is null (it should be null as this was emitted)
-    expect(value).toBeNull();
+   // Check to see if the value is null.
+   expect(value).toBeNull();
 
-   /* Specifically, it confirms that the resolver took the string '1'
-   from the route (result$), converted it (if necessary), and passed it to the postService.find() method. */
-    expect(postServiceSpy.find).toHaveBeenCalledWith(1);
-    expect(routerSpy.navigateByUrl).not.toHaveBeenCalled();
-
+   // Check to see if the post service has NOT been called.
+   expect(postServiceSpy.find).not.toHaveBeenCalled();
 
   });
 

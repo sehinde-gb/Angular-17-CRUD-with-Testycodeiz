@@ -14,6 +14,7 @@ import { PostFormComponent } from '../../components/post-form/post-form.componen
 
 
 describe('CreateComponent (container)', () => {
+  // Test variables
   let fixture: ComponentFixture<CreateComponent>;
   let component: CreateComponent;
 
@@ -21,6 +22,7 @@ describe('CreateComponent (container)', () => {
   let routerSpy: jasmine.SpyObj<Router>;
   let toastSpy: jasmine.SpyObj<ToastService>;
 
+  // TestBed setup runs before each test
   beforeEach(async () => {
     postServiceSpy = jasmine.createSpyObj<PostService>('PostService', ['create']);
     routerSpy = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
@@ -47,29 +49,16 @@ describe('CreateComponent (container)', () => {
 
     fixture = TestBed.createComponent(CreateComponent);
     component = fixture.componentInstance;
-  }),
+  });
     afterEach(() => {
     toastSpy.showSuccess.calls.reset();
     toastSpy.showError.calls.reset();
   });
 
-  it('renders the post-form stub and passes expected inputs', () => {
-    // Act run the lifecycle hook
-    fixture.detectChanges();
-    // Assert that the page is not null
-    const stubDe = fixture.debugElement.query(By.directive(PostFormStubComponent));
-    expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
-
-    // Assert that the input create post has been passed to the stub
-    const stub = stubDe!.componentInstance as PostFormStubComponent;
-
-    expect(stub.submitLabel).toBe('Create Post');
-
-    expect(stub.requireDirty).toBeFalse();
-    expect(stub.form).toBeTruthy();
-
-    expect(toastSpy.showSuccess).not.toHaveBeenCalled();
-  });
+ /*
+    Success path
+    Test that verify normal user behaviour works
+  */
 
   it('calls PostService.create(dto) when stub emits submitForm (success path)', () => {
      // Act run the lifecycle hook
@@ -96,6 +85,10 @@ describe('CreateComponent (container)', () => {
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
   });
 
+   /*
+    Error path
+    Tests that verify error handling behaviour
+  */
   it('sets serverErrorMessage for 422/400 (local handling)', () => {
      // Act run the lifecycle hook
     fixture.detectChanges();
@@ -117,5 +110,29 @@ describe('CreateComponent (container)', () => {
     expect(component.form.errors?.['serverError']).toBeTrue();
     expect(toastSpy.showSuccess).not.toHaveBeenCalled();
 
+  });
+
+  /*
+    Render / UI state
+    Tests that verify the component renders correctly
+    without user interaction
+  */
+
+   it('renders the post-form stub and passes expected inputs', () => {
+    // Act run the lifecycle hook
+    fixture.detectChanges();
+    // Assert that the page is not null
+    const stubDe = fixture.debugElement.query(By.directive(PostFormStubComponent));
+    expect(stubDe).withContext(fixture.nativeElement.innerHTML).not.toBeNull();
+
+    // Assert that the input create post has been passed to the stub
+    const stub = stubDe!.componentInstance as PostFormStubComponent;
+
+    expect(stub.submitLabel).toBe('Create Post');
+
+    expect(stub.requireDirty).toBeFalse();
+    expect(stub.form).toBeTruthy();
+
+    expect(toastSpy.showSuccess).not.toHaveBeenCalled();
   });
 });

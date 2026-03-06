@@ -24,19 +24,10 @@ describe('guestGuard', () => {
   });
 
 
-
-
-  it('returns true when logged out (can view login/register)', () => {
-    storageSpy.getToken.and.returnValue(null);
-
-    const result = TestBed.runInInjectionContext(() =>
-      guestGuard({} as any, {} as any)
-      );
-
-      expect(result).toBeTrue();
-
-  });
-
+  /*
+    Success path
+    Test that verify normal user behaviour works
+  */
 
   it('redirects to /post/index when logged in', () => {
     // Arrange
@@ -55,4 +46,18 @@ describe('guestGuard', () => {
     expect(routerSpy.createUrlTree).toHaveBeenCalledWith(['/post/index']);
     expect(result).toBe(fakeTree);
   });
+
+  it('returns true when logged out (can view login/register)', () => {
+    storageSpy.getToken.and.returnValue(null);
+
+    const result = TestBed.runInInjectionContext(() =>
+      guestGuard({} as any, {} as any)
+      );
+
+      expect(result).toBeTrue();
+
+  });
+
+
+
 })
