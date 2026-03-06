@@ -97,7 +97,7 @@ describe('PostFormComponent', () => {
   /*
     Success paths
   */
-    it('emits submitForm on ngSubmit', () => {
+    it('calls and emits submitForm on ngSubmit', () => {
       // Arrange
       spyOn(component.submitForm, 'emit');
 
@@ -139,7 +139,7 @@ describe('PostFormComponent', () => {
     });
 
 
-    it('when requireDirty=true, disables submit until form is dirty', () => {
+    it('disables submit until form is dirty, when requireDirty=true, ', () => {
       component.requireDirty = true;
 
       component.form.controls['title'].setValue('T');

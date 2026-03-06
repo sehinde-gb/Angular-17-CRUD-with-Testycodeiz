@@ -96,7 +96,7 @@ describe('IndexComponent (resolver template states)', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/post/index');
   });
 
-  it('unable to load posts and recovers when resolver later emits posts', async () => {
+  it('renders unable to load posts and recovers when resolver later emits posts', async () => {
 
     routeData$.next({ postList: null });
 
@@ -137,7 +137,7 @@ describe('IndexComponent (resolver template states)', () => {
     Tests that verify normal user behaviour works
   */
 
-  it('deletePost calls service and updates the list & toasts success', async () => {
+  it('calls deletePost /service and updates the list & toasts success', async () => {
     // Arrange add 2 posts in to the route
     routeData$.next({
       postList: [
@@ -171,7 +171,7 @@ describe('IndexComponent (resolver template states)', () => {
     expect(toastSpy.showSuccess).toHaveBeenCalledWith('Post deleted');
   });
 
-  it('logout calls auth.logout and navigates to /auth/login', async () => {
+  it('calls auth.logout and navigates to /auth/login', async () => {
 
     component.logout();
     await fixture.whenStable();

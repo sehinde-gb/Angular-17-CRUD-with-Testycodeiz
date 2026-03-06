@@ -56,7 +56,7 @@ describe('postResolver', () => {
     Error paths
     Tests that verify error handling behaviour
   */
-  it('valid postId: resolves null when PostService.find errors (swallows error)', async () => {
+  it('valid postId: returns null when PostService.find errors (swallows error)', async () => {
     // Arrange
     const route = createRoute('1');
 
@@ -124,7 +124,7 @@ describe('postResolver', () => {
   Edge cases
   Tests that verify invalid or boundary route inputs
 */
-   it('navigates to /post/index and returns null when id is invalid', async () => {
+   it('returns null when id is invalid and navigates to /post/index', async () => {
     // Arrange: invalid id
     const route = createRoute('abc');
 

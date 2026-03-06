@@ -128,7 +128,7 @@ describe('EditComponent (container, resolver)', () => {
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/index');
   });
 
-  it('navigates back when form clean', () => {
+  it('does navigate back when form clean', () => {
     // Arrange send a resolved post
     setResolvedPost({ id: 1, title: 'A', body: 'B'} as Post);
 
@@ -195,7 +195,7 @@ describe('EditComponent (container, resolver)', () => {
     expect(component.form.errors?.['serverError']).toBeTrue();
   });
 
-  it('retry() reloads the current route', () => {
+  it('calls retry() reloads the current route', () => {
     // Arrange need to simulate the hasError = true without this my test fails
     setResolvedPost(null); // error state not strictly required for calling method
 
@@ -212,7 +212,7 @@ describe('EditComponent (container, resolver)', () => {
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/post/1/edit'); // routerSpy.url
   });
 
-  it('clicking retry button calls retry()', () => {
+  it('calls retry() and click on retry button ', () => {
     // Arrange need to simulate the hasError = true without this my test fails
     setResolvedPost(null); // ✅ makes hasError true -> renders Retry button
 

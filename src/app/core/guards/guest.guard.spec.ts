@@ -25,8 +25,7 @@ describe('guestGuard', () => {
 
 
   /*
-    Success path
-    Test that verify normal user behaviour works
+    Allow navigation
   */
 
   it('redirects to /post/index when logged in', () => {

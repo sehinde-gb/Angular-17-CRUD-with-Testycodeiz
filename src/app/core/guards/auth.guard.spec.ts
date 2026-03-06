@@ -24,8 +24,7 @@ describe('authGuard', () => {
   });
 
   /*
-    Success path
-    Test that verify normal user behaviour works
+    Allow navigation
   */
   it('returns true when logged in', () => {
       // Retrieves the token
@@ -43,8 +42,7 @@ describe('authGuard', () => {
     });
 
   /*
-    Error path
-    Tests that verify error handling behaviour
+    Redirect / protection
   */
 
   it('returns UrlTree to /auth/login with returnUrl when not authenticated', () => {

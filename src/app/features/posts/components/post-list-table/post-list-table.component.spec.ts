@@ -34,7 +34,7 @@ describe('PostListTableComponent', () => {
   */
 
 
-  it('emits deletePost with the post id when delete button clicked', () => {
+  it('calls deletePost and emitswith the post id when delete button clicked', () => {
     // Arrange
     component.posts = [{ id: 1, title: 'A', body: 'B' } as any];
 
@@ -50,7 +50,7 @@ describe('PostListTableComponent', () => {
     expect(component.deletePost.emit).toHaveBeenCalledWith(1);
   });
 
-  it('emits deletePost with the correct id when delete is clicked', () => {
+  it('calls deletePost and emits with the correct id when delete is clicked', () => {
     // Arrange
     component.posts = [
       { id: 1, title: 'A', body: 'B' } as any,
@@ -68,12 +68,6 @@ describe('PostListTableComponent', () => {
     // Assert
     expect(component.deletePost.emit).toHaveBeenCalledWith(2);
   });
-
-  /*
-    Error path
-    Tests that verify error handling behaviour
-  */
-
 
   /*
     Edge case

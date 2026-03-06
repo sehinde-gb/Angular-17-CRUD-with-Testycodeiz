@@ -70,8 +70,7 @@ describe('roleGuard', () => {
 
 
   /*
-    Error path
-    Tests that verify error handling behaviour
+    Redirect / protection
   */
 
   it('redirects to /forbidden with from=state.url when user lacks required role', () => {
